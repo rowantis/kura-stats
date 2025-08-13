@@ -11,6 +11,32 @@ interface SwapTransactionTableProps {
   pageSize: number
 }
 
+const tokenIn = (tx: SwapTransaction) => {
+  if (Number(tx.token0Amount) > 0) {
+    return {
+      token: tx.token0,
+      amount: tx.token0Amount
+    }
+  }
+  return {
+    token: tx.token1,
+    amount: tx.token1Amount
+  }
+}
+
+const tokenOut = (tx: SwapTransaction) => {
+  if (Number(tx.token0Amount) > 0) {
+    return {
+      token: tx.token1,
+      amount: tx.token1Amount
+    }
+  }
+  return {
+    token: tx.token0,
+    amount: tx.token0Amount
+  }
+}
+
 export default function SwapTransactionTable({
   transactions,
   currentPage,
@@ -29,8 +55,8 @@ export default function SwapTransactionTable({
         <TableHeaderCell>Pool Type</TableHeaderCell>
         <TableHeaderCell>USD Value</TableHeaderCell>
         <TableHeaderCell>TX</TableHeaderCell>
-        <TableHeaderCell>Token0</TableHeaderCell>
-        <TableHeaderCell>Token1</TableHeaderCell>
+        <TableHeaderCell>Token In</TableHeaderCell>
+        <TableHeaderCell>Token Out</TableHeaderCell>
         <TableHeaderCell>Token0 Amount</TableHeaderCell>
         <TableHeaderCell>Token1 Amount</TableHeaderCell>
       </TableHeader>
@@ -64,20 +90,20 @@ export default function SwapTransactionTable({
             </TableCell>
             <TableCell>
               <CopyButton
-                copyText={tx.token0.id}
-                showText={tx.token0.symbol}
+                copyText={tokenIn(tx).token.id}
+                showText={tokenIn(tx).token.symbol}
                 label="토큰0"
               />
             </TableCell>
             <TableCell>
               <CopyButton
-                copyText={tx.token1.id}
-                showText={tx.token1.symbol}
+                copyText={tokenOut(tx).token.id}
+                showText={tokenOut(tx).token.symbol}
                 label="토큰1"
               />
             </TableCell>
-            <TableCell>{formatAmount(tx.token0Amount)}</TableCell>
-            <TableCell>{formatAmount(tx.token1Amount)}</TableCell>
+            <TableCell>{formatAmount(tokenIn(tx).amount)}</TableCell>
+            <TableCell>{formatAmount((-Number(tokenOut(tx).amount)).toString())}</TableCell>
           </TableRow>
         ))}
       </TableBody>
