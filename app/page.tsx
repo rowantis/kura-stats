@@ -5,7 +5,7 @@ import { useQuery, gql } from '@apollo/client'
 import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo-client'
 import { transformTransactions, filterTransactionsByAddress, filterTransactionsByType, filterTransactionsByToken, filterTransactionsByPoolType } from '@/lib/transactions'
-import { UnifiedTransaction } from '@/types/graphql'
+import { SwapTransaction, LiquidityTransaction } from '@/types/graphql'
 import TransactionTable from '@/components/TransactionTable'
 import Pagination from '@/components/Pagination'
 
@@ -146,46 +146,56 @@ const DEX_QUERY = gql`
 `
 
 function DashboardContent() {
+  const [activeTab, setActiveTab] = useState<'swap' | 'liquidity'>('swap')
   const [addressFilter, setAddressFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [tokenFilter, setTokenFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState('All')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const [filteredTransactions, setFilteredTransactions] = useState<UnifiedTransaction[]>([])
+  const [filteredTransactions, setFilteredTransactions] = useState<{
+    swaps: SwapTransaction[]
+    liquidity: LiquidityTransaction[]
+  }>({ swaps: [], liquidity: [] })
 
   const { loading, error, data } = useQuery(DEX_QUERY)
 
   useEffect(() => {
     if (data) {
-      let transactions = transformTransactions(data)
+      const { swaps, liquidity } = transformTransactions(data)
+      let filteredSwaps = [...swaps]
+      let filteredLiquidity = [...liquidity]
 
       // 주소 필터링
       if (addressFilter) {
-        transactions = filterTransactionsByAddress(transactions, addressFilter)
+        filteredSwaps = filterTransactionsByAddress(filteredSwaps, addressFilter)
+        filteredLiquidity = filterTransactionsByAddress(filteredLiquidity, addressFilter)
       }
 
-      // 타입 필터링
-      if (typeFilter !== 'All') {
-        transactions = filterTransactionsByType(transactions, typeFilter)
+      // 타입 필터링 (Liquidity 탭에서만 적용)
+      if (activeTab === 'liquidity' && typeFilter !== 'All') {
+        filteredLiquidity = filterTransactionsByType(filteredLiquidity, typeFilter)
       }
 
       // 토큰 필터링
       if (tokenFilter) {
-        transactions = filterTransactionsByToken(transactions, tokenFilter)
+        filteredSwaps = filterTransactionsByToken(filteredSwaps, tokenFilter)
+        filteredLiquidity = filterTransactionsByToken(filteredLiquidity, tokenFilter)
       }
 
       // 풀타입 필터링
       if (poolTypeFilter !== 'All') {
-        transactions = filterTransactionsByPoolType(transactions, poolTypeFilter)
+        filteredSwaps = filterTransactionsByPoolType(filteredSwaps, poolTypeFilter)
+        filteredLiquidity = filterTransactionsByPoolType(filteredLiquidity, poolTypeFilter)
       }
 
-      setFilteredTransactions(transactions)
+      setFilteredTransactions({ swaps: filteredSwaps, liquidity: filteredLiquidity })
       setCurrentPage(1) // 필터 변경시 첫 페이지로
     }
-  }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter])
+  }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter, activeTab])
 
-  const totalPages = Math.ceil(filteredTransactions.length / pageSize)
+  const currentTransactions = activeTab === 'swap' ? filteredTransactions.swaps : filteredTransactions.liquidity
+  const totalPages = Math.ceil(currentTransactions.length / pageSize)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -220,6 +230,32 @@ function DashboardContent() {
           <p className="text-gray-600">거래내역을 확인하세요</p>
         </div>
 
+        {/* 탭 네비게이션 */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('swap')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'swap'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Swap
+              </button>
+              <button
+                onClick={() => setActiveTab('liquidity')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'liquidity'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Liquidity
+              </button>
+            </nav>
+          </div>
+        </div>
+
         {/* 필터 섹션 */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -237,22 +273,23 @@ function DashboardContent() {
               />
             </div>
 
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                거래 타입
-              </label>
-              <select
-                id="type"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              >
-                <option value="All">전체</option>
-                <option value="Swap">Swap</option>
-                <option value="Mint">Mint</option>
-                <option value="Burn">Burn</option>
-              </select>
-            </div>
+            {activeTab === 'liquidity' && (
+              <div>
+                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+                  거래 타입
+                </label>
+                <select
+                  id="type"
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                >
+                  <option value="All">전체</option>
+                  <option value="Mint">Mint</option>
+                  <option value="Burn">Burn</option>
+                </select>
+              </div>
+            )}
 
             <div>
               <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-2">
@@ -311,14 +348,14 @@ function DashboardContent() {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            총 {filteredTransactions.length}개의 거래가 있습니다.
+            총 {currentTransactions.length}개의 거래가 있습니다.
           </div>
         </div>
 
         {/* 거래 테이블 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <TransactionTable
-            transactions={filteredTransactions}
+            transactions={currentTransactions}
             currentPage={currentPage}
             pageSize={pageSize}
           />

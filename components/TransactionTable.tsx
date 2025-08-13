@@ -1,9 +1,9 @@
-import { UnifiedTransaction } from '@/types/graphql'
+import { DexTransaction } from '@/types/graphql'
 import { formatAddress, formatAmount, formatUSD, formatDate } from '@/lib/utils'
 import { Copy } from 'lucide-react'
 
 interface TransactionTableProps {
-  transactions: UnifiedTransaction[]
+  transactions: DexTransaction[]
   currentPage: number
   pageSize: number
 }

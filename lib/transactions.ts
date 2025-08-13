@@ -1,6 +1,7 @@
 import {
   GraphQLData,
-  UnifiedTransaction,
+  SwapTransaction,
+  LiquidityTransaction,
   CLSwap,
   CLMint,
   CLBurn,
@@ -10,12 +11,16 @@ import {
 } from '@/types/graphql'
 import { getPoolType } from '@/lib/utils'
 
-export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
-  const transactions: UnifiedTransaction[] = []
+export function transformTransactions(data: GraphQLData): {
+  swaps: SwapTransaction[]
+  liquidity: LiquidityTransaction[]
+} {
+  const swaps: SwapTransaction[] = []
+  const liquidity: LiquidityTransaction[] = []
 
   // CL Swaps
   data.clSwaps.forEach((swap: CLSwap) => {
-    transactions.push({
+    swaps.push({
       id: `${swap.transaction.id}-cl-swap`,
       type: 'Swap',
       origin: swap.origin,
@@ -30,9 +35,26 @@ export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
     })
   })
 
+  // Legacy Swaps
+  data.legacySwaps.forEach((swap: LegacySwap) => {
+    swaps.push({
+      id: `${swap.transaction.id}-legacy-swap`,
+      type: 'Swap',
+      origin: swap.origin,
+      token0: swap.pool.token0,
+      token1: swap.pool.token1,
+      token0Amount: (Number(swap.amount0In) - Number(swap.amount0Out)).toString(),
+      token1Amount: (Number(swap.amount1In) - Number(swap.amount1Out)).toString(),
+      amountUSD: swap.amountUSD,
+      timestamp: swap.transaction.timestamp,
+      transactionId: swap.transaction.id,
+      poolType: getPoolType(undefined, swap.pool.isStable),
+    })
+  })
+
   // CL Mints
   data.clMints.forEach((mint: CLMint) => {
-    transactions.push({
+    liquidity.push({
       id: `${mint.transaction.id}-cl-mint`,
       type: 'Mint',
       origin: mint.origin,
@@ -49,7 +71,7 @@ export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
 
   // CL Burns
   data.clBurns.forEach((burn: CLBurn) => {
-    transactions.push({
+    liquidity.push({
       id: `${burn.transaction.id}-cl-burn`,
       type: 'Burn',
       origin: burn.origin,
@@ -64,26 +86,9 @@ export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
     })
   })
 
-  // Legacy Swaps
-  data.legacySwaps.forEach((swap: LegacySwap) => {
-    transactions.push({
-      id: `${swap.transaction.id}-legacy-swap`,
-      type: 'Swap',
-      origin: swap.origin,
-      token0: swap.pool.token0,
-      token1: swap.pool.token1,
-      token0Amount: (Number(swap.amount0In) - Number(swap.amount0Out)).toString(),
-      token1Amount: (Number(swap.amount1In) - Number(swap.amount1Out)).toString(),
-      amountUSD: swap.amountUSD,
-      timestamp: swap.transaction.timestamp,
-      transactionId: swap.transaction.id,
-      poolType: getPoolType(undefined, swap.pool.isStable),
-    })
-  })
-
   // Legacy Mints
   data.legacyMints.forEach((mint: LegacyMint) => {
-    transactions.push({
+    liquidity.push({
       id: `${mint.transaction.id}-legacy-mint`,
       type: 'Mint',
       origin: mint.origin,
@@ -100,7 +105,7 @@ export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
 
   // Legacy Burns
   data.legacyBurns.forEach((burn: LegacyBurn) => {
-    transactions.push({
+    liquidity.push({
       id: `${burn.transaction.id}-legacy-burn`,
       type: 'Burn',
       origin: burn.origin,
@@ -116,33 +121,37 @@ export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
   })
 
   // 최신 거래부터 정렬
-  return transactions.sort((a, b) =>
+  const sortByTimestamp = (a: SwapTransaction | LiquidityTransaction, b: SwapTransaction | LiquidityTransaction) =>
     new Date(Number(b.timestamp) * 1000).getTime() - new Date(Number(a.timestamp) * 1000).getTime()
-  ).filter(tx => tx.origin)
+
+  return {
+    swaps: swaps.sort(sortByTimestamp),
+    liquidity: liquidity.sort(sortByTimestamp)
+  }
 }
 
-export function filterTransactionsByAddress(
-  transactions: UnifiedTransaction[],
+export function filterTransactionsByAddress<T extends SwapTransaction | LiquidityTransaction>(
+  transactions: T[],
   address: string
-): UnifiedTransaction[] {
+): T[] {
   if (!address) return transactions
   return transactions.filter(tx =>
     tx.origin && tx.origin.toLowerCase() === address.toLowerCase()
   )
 }
 
-export function filterTransactionsByType(
-  transactions: UnifiedTransaction[],
+export function filterTransactionsByType<T extends SwapTransaction | LiquidityTransaction>(
+  transactions: T[],
   type: string
-): UnifiedTransaction[] {
+): T[] {
   if (!type || type === 'All') return transactions
   return transactions.filter(tx => tx.type === type)
 }
 
-export function filterTransactionsByToken(
-  transactions: UnifiedTransaction[],
+export function filterTransactionsByToken<T extends SwapTransaction | LiquidityTransaction>(
+  transactions: T[],
   tokenAddress: string
-): UnifiedTransaction[] {
+): T[] {
   if (!tokenAddress) return transactions
   return transactions.filter(tx =>
     tx.token0.id.toLowerCase() === tokenAddress.toLowerCase() ||
@@ -150,10 +159,10 @@ export function filterTransactionsByToken(
   )
 }
 
-export function filterTransactionsByPoolType(
-  transactions: UnifiedTransaction[],
+export function filterTransactionsByPoolType<T extends SwapTransaction | LiquidityTransaction>(
+  transactions: T[],
   poolType: string
-): UnifiedTransaction[] {
+): T[] {
   if (!poolType || poolType === 'All') return transactions
 
   if (poolType === 'V2') {

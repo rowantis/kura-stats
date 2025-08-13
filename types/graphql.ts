@@ -90,10 +90,10 @@ export interface GraphQLData {
   legacyBurns: LegacyBurn[]
 }
 
-// 통합된 거래 타입
-export interface UnifiedTransaction {
+// DEX 거래 타입
+export interface SwapTransaction {
   id: string
-  type: 'Swap' | 'Mint' | 'Burn'
+  type: 'Swap'
   origin: string
   token0: Token
   token1: Token
@@ -103,4 +103,20 @@ export interface UnifiedTransaction {
   timestamp: string
   transactionId: string
   poolType: string
-} 
+}
+
+export interface LiquidityTransaction {
+  id: string
+  type: 'Mint' | 'Burn'
+  origin: string
+  token0: Token
+  token1: Token
+  token0Amount: string
+  token1Amount: string
+  amountUSD: string
+  timestamp: string
+  transactionId: string
+  poolType: string
+}
+
+export type DexTransaction = SwapTransaction | LiquidityTransaction 
