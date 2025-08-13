@@ -78,4 +78,28 @@ export function getPoolType(feeTier?: number, isStable?: boolean): string {
     return `V2:${isStable ? 'stable' : 'volatile'}`
   }
   return 'Unknown'
+}
+
+// 거래 타입별 색상 결정
+export function getTypeColor(type: string): string {
+  switch (type) {
+    case 'Swap':
+      return 'text-blue-600 bg-blue-100'
+    case 'Mint':
+      return 'text-green-600 bg-green-100'
+    case 'Burn':
+      return 'text-red-600 bg-red-100'
+    default:
+      return 'text-gray-600 bg-gray-100'
+  }
+}
+
+// 풀 타입별 색상 결정
+export function getPoolTypeColor(poolType: string): string {
+  if (poolType.startsWith('V3:')) {
+    return 'text-purple-600 bg-purple-100'
+  } else if (poolType.startsWith('V2:')) {
+    return 'text-orange-600 bg-orange-100'
+  }
+  return 'text-gray-600 bg-gray-100'
 } 

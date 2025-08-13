@@ -6,7 +6,8 @@ import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo-client'
 import { transformTransactions, filterTransactionsByAddress, filterTransactionsByType, filterTransactionsByToken, filterTransactionsByPoolType, filterTransactionsByDateRange } from '@/lib/transactions'
 import { SwapTransaction, LiquidityTransaction, LiquidityPosition, KuraPosition } from '@/types/graphql'
-import TransactionTable from '@/components/TransactionTable'
+import SwapTransactionTable from '@/components/SwapTransactionTable'
+import LiquidityTransactionTable from '@/components/LiquidityTransactionTable'
 import LiquidityPositionTable from '@/components/LiquidityPositionTable'
 import KuraPositionTable from '@/components/KuraPositionTable'
 import Pagination from '@/components/Pagination'
@@ -684,15 +685,15 @@ function DashboardContent() {
         {/* 거래 테이블 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {activeTab === 'swap' && (
-            <TransactionTable
-              transactions={currentTransactions}
+            <SwapTransactionTable
+              transactions={filteredTransactions.swaps}
               currentPage={currentPage}
               pageSize={pageSize}
             />
           )}
           {activeTab === 'liquidity' && (
-            <TransactionTable
-              transactions={currentTransactions}
+            <LiquidityTransactionTable
+              transactions={filteredTransactions.liquidity}
               currentPage={currentPage}
               pageSize={pageSize}
             />

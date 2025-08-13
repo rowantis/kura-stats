@@ -1,5 +1,6 @@
 import { LiquidityPosition } from '@/types/graphql'
 import CopyButton from './CopyButton'
+import PoolTypeChip from './PoolTypeChip'
 import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from './BaseTable'
 
 interface LiquidityPositionTableProps {
@@ -36,7 +37,9 @@ export default function LiquidityPositionTable({ positions, currentPage, pageSiz
                 label="유저"
               />
             </TableCell>
-            <TableCell>{position.poolType}</TableCell>
+            <TableCell>
+              <PoolTypeChip poolType={position.poolType} />
+            </TableCell>
             <TableCell>${parseFloat(position.usdValue).toLocaleString()}</TableCell>
             <TableCell>
               <CopyButton
