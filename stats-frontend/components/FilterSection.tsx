@@ -6,8 +6,8 @@ interface FilterSectionProps {
   setAddressFilter: (value: string) => void
   typeFilter: string
   setTypeFilter: (value: string) => void
-  poolTypeFilter: string
-  setPoolTypeFilter: (value: string) => void
+  poolTypeFilter: "V2" | "V3" | "All"
+  setPoolTypeFilter: (value: "V2" | "V3" | "All") => void
   startDate: string
   setStartDate: (value: string) => void
   endDate: string
@@ -110,20 +110,18 @@ export default function FilterSection({
           <select
             id="poolType"
             value={poolTypeFilter}
-            onChange={(e) => setPoolTypeFilter(e.target.value)}
+            onChange={(e) => {
+              if (!["All", "V2", "V3"].includes(e.target.value)) {
+                throw new Error("Invalid pool type")
+              } else {
+                setPoolTypeFilter(e.target.value as "V2" | "V3" | "All")
+              }
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           >
             <option value="All">전체</option>
             <option value="V2">V2</option>
             <option value="V3">V3</option>
-            <option value="V2:volatile">V2:volatile</option>
-            <option value="V2:stable">V2:stable</option>
-            <option value="V3:1ticks">V3:1ticks</option>
-            <option value="V3:5ticks">V3:5ticks</option>
-            <option value="V3:10ticks">V3:10ticks</option>
-            <option value="V3:50ticks">V3:50ticks</option>
-            <option value="V3:100ticks">V3:100ticks</option>
-            <option value="V3:200ticks">V3:200ticks</option>
           </select>
         </div>
 

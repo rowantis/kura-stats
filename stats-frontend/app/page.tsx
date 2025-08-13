@@ -10,7 +10,7 @@ import LiquidityPositionTable from '@/components/LiquidityPositionTable'
 import KuraPositionTable from '@/components/KuraPositionTable'
 import Pagination from '@/components/Pagination'
 import FilterSection from '@/components/FilterSection'
-import { formatDate } from '@/lib/utils'
+import { formatDate, parseFormattedDate } from '@/lib/utils'
 import { useSwapTransactions } from '@/hooks/useSwapTransactions'
 import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
 
@@ -82,7 +82,7 @@ function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'swap' | 'liquidity' | 'liquidityPosition' | 'kuraPosition'>('swap')
   const [addressFilter, setAddressFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
-  const [poolTypeFilter, setPoolTypeFilter] = useState('All')
+  const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -142,12 +142,10 @@ function DashboardContent() {
     // 기간 필터링 (LiquidityPosition에서만)
     if ((startDate || endDate) && activeTab === 'liquidityPosition') {
       filteredLiquidityPos = filteredLiquidityPos.filter(pos => {
-        const posTime = new Date(pos.createdTime.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z'))
-        const start = startDate ? new Date(startDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
-        const end = endDate ? new Date(endDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
+        const posTime = parseFormattedDate(pos.createdTime)
 
-        if (start && posTime < start) return false
-        if (end && posTime > end) return false
+        if (startDate && Number(posTime) < parseFormattedDate(startDate)) return false
+        if (endDate && Number(posTime) > parseFormattedDate(endDate)) return false
         return true
       })
     }
