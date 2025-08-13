@@ -19,7 +19,7 @@ export function transformTransactions(data: GraphQLData): {
   const liquidity: LiquidityTransaction[] = []
 
   // CL Swaps
-  data.clSwaps.forEach((swap: CLSwap) => {
+  data.clSwaps?.forEach((swap: CLSwap) => {
     swaps.push({
       id: `${swap.transaction.id}-cl-swap`,
       type: 'Swap',
@@ -36,7 +36,7 @@ export function transformTransactions(data: GraphQLData): {
   })
 
   // Legacy Swaps
-  data.legacySwaps.forEach((swap: LegacySwap) => {
+  data.legacySwaps?.forEach((swap: LegacySwap) => {
     swaps.push({
       id: `${swap.transaction.id}-legacy-swap`,
       type: 'Swap',
@@ -53,7 +53,7 @@ export function transformTransactions(data: GraphQLData): {
   })
 
   // CL Mints
-  data.clMints.forEach((mint: CLMint) => {
+  data.clMints?.forEach((mint: CLMint) => {
     liquidity.push({
       id: `${mint.transaction.id}-cl-mint`,
       type: 'Mint',
@@ -70,7 +70,7 @@ export function transformTransactions(data: GraphQLData): {
   })
 
   // CL Burns
-  data.clBurns.forEach((burn: CLBurn) => {
+  data.clBurns?.forEach((burn: CLBurn) => {
     liquidity.push({
       id: `${burn.transaction.id}-cl-burn`,
       type: 'Burn',
@@ -87,7 +87,7 @@ export function transformTransactions(data: GraphQLData): {
   })
 
   // Legacy Mints
-  data.legacyMints.forEach((mint: LegacyMint) => {
+  data.legacyMints?.forEach((mint: LegacyMint) => {
     liquidity.push({
       id: `${mint.transaction.id}-legacy-mint`,
       type: 'Mint',
@@ -104,7 +104,7 @@ export function transformTransactions(data: GraphQLData): {
   })
 
   // Legacy Burns
-  data.legacyBurns.forEach((burn: LegacyBurn) => {
+  data.legacyBurns?.forEach((burn: LegacyBurn) => {
     liquidity.push({
       id: `${burn.transaction.id}-legacy-burn`,
       type: 'Burn',

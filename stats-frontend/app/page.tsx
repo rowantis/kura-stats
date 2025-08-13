@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useQuery, gql } from '@apollo/client'
 import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo-client'
-import { transformTransactions, filterTransactionsByAddress, filterTransactionsByType, filterTransactionsByToken, filterTransactionsByPoolType, filterTransactionsByDateRange } from '@/lib/transactions'
 import { SwapTransaction, LiquidityTransaction, LiquidityPosition, KuraPosition } from '@/types/graphql'
 import SwapTransactionTable from '@/components/SwapTransactionTable'
 import LiquidityTransactionTable from '@/components/LiquidityTransactionTable'
@@ -13,142 +11,8 @@ import KuraPositionTable from '@/components/KuraPositionTable'
 import Pagination from '@/components/Pagination'
 import { Download } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
-
-const DEX_QUERY = gql`
-  query MyQuery {
-    clSwaps {
-      amount0
-      amount1
-      amountUSD
-      origin
-      pool {
-        feeTier
-      }
-      token0 {
-        symbol
-        id
-      }
-      token1 {
-        symbol
-        id
-      }
-      transaction {
-        id
-        timestamp
-      }
-    }
-    clMints {
-      amount1
-      amount0
-      amountUSD
-      origin
-      pool {
-        feeTier
-      }
-      token0 {
-        symbol
-        id
-      }
-      token1 {
-        symbol
-        id
-      }
-      transaction {
-        id
-        timestamp
-      }
-    }
-    clBurns {
-      amount1
-      amount0
-      amountUSD
-      origin
-      pool {
-        feeTier
-      }
-      token0 {
-        symbol
-        id
-      }
-      token1 {
-        symbol
-        id
-      }
-      transaction {
-        id
-        timestamp
-      }
-    }
-    legacySwaps {
-      amount0In
-      amount0Out
-      amount1In
-      amount1Out
-      amountUSD
-      origin: from
-      pool {
-        isStable
-        token0 {
-          symbol
-          id
-        }
-        token1 {
-          symbol
-          id
-        }
-      }
-      transaction {
-        id
-        timestamp
-      }
-    }
-    legacyMints {
-      amount0
-      amount1
-      amountUSD
-      pool {
-        isStable
-        token0 {
-          symbol
-          id
-        }
-        token1 {
-          symbol
-          id
-        }
-        id
-      }
-      transaction {
-        id
-        timestamp
-      }
-      origin
-    }
-    
-    legacyBurns {
-      amount0
-      amount1
-      amountUSD
-      origin
-      pool {
-        isStable
-        token0 {
-          symbol
-          id
-        }
-        token1 {
-          symbol
-          id
-        }
-        id
-      }
-      transaction {
-        id
-        timestamp
-      }
-    }
-  }
-`
+import { useSwapTransactions } from '@/hooks/useSwapTransactions'
+import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
 
 // 목업 데이터
 const mockLiquidityPositions: LiquidityPosition[] = [
@@ -224,57 +88,34 @@ function DashboardContent() {
   const [endDate, setEndDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const [filteredTransactions, setFilteredTransactions] = useState<{
-    swaps: SwapTransaction[]
-    liquidity: LiquidityTransaction[]
-  }>({ swaps: [], liquidity: [] })
 
+  // Swap 거래 훅
+  const swapTransactions = useSwapTransactions({
+    pageSize,
+    currentPage,
+    addressFilter,
+    tokenFilter,
+    poolTypeFilter,
+    startDate,
+    endDate
+  })
+
+  // Liquidity 거래 훅
+  const liquidityTransactions = useLiquidityTransactions({
+    pageSize,
+    currentPage,
+    addressFilter,
+    typeFilter,
+    tokenFilter,
+    poolTypeFilter,
+    startDate,
+    endDate
+  })
+
+  // LiquidityPosition과 KuraPosition 필터링
   const [filteredLiquidityPositions, setFilteredLiquidityPositions] = useState<LiquidityPosition[]>([])
   const [filteredKuraPositions, setFilteredKuraPositions] = useState<KuraPosition[]>([])
 
-  const { loading, error, data } = useQuery(DEX_QUERY)
-
-  useEffect(() => {
-    if (data) {
-      const { swaps, liquidity } = transformTransactions(data)
-      let filteredSwaps = [...swaps]
-      let filteredLiquidity = [...liquidity]
-
-      // 주소 필터링
-      if (addressFilter) {
-        filteredSwaps = filterTransactionsByAddress(filteredSwaps, addressFilter)
-        filteredLiquidity = filterTransactionsByAddress(filteredLiquidity, addressFilter)
-      }
-
-      // 타입 필터링 (Liquidity 탭에서만 적용)
-      if (activeTab === 'liquidity' && typeFilter !== 'All') {
-        filteredLiquidity = filterTransactionsByType(filteredLiquidity, typeFilter)
-      }
-
-      // 토큰 필터링
-      if (tokenFilter) {
-        filteredSwaps = filterTransactionsByToken(filteredSwaps, tokenFilter)
-        filteredLiquidity = filterTransactionsByToken(filteredLiquidity, tokenFilter)
-      }
-
-      // 풀타입 필터링
-      if (poolTypeFilter !== 'All') {
-        filteredSwaps = filterTransactionsByPoolType(filteredSwaps, poolTypeFilter)
-        filteredLiquidity = filterTransactionsByPoolType(filteredLiquidity, poolTypeFilter)
-      }
-
-      // 기간 필터링
-      if (startDate || endDate) {
-        filteredSwaps = filterTransactionsByDateRange(filteredSwaps, startDate, endDate)
-        filteredLiquidity = filterTransactionsByDateRange(filteredLiquidity, startDate, endDate)
-      }
-
-      setFilteredTransactions({ swaps: filteredSwaps, liquidity: filteredLiquidity })
-      setCurrentPage(1) // 필터 변경시 첫 페이지로
-    }
-  }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter, startDate, endDate, activeTab])
-
-  // LiquidityPosition과 KuraPosition 필터링
   useEffect(() => {
     let filteredLiquidityPos = [...mockLiquidityPositions]
     let filteredKuraPos = [...mockKuraPositions]
@@ -323,17 +164,21 @@ function DashboardContent() {
     setFilteredKuraPositions(filteredKuraPos)
   }, [addressFilter, tokenFilter, poolTypeFilter, startDate, endDate, activeTab])
 
-  const currentTransactions = activeTab === 'swap' ? filteredTransactions.swaps : filteredTransactions.liquidity
-  const currentLiquidityPositions = filteredLiquidityPositions
-  const currentKuraPositions = filteredKuraPositions
+  // 현재 탭의 데이터에 대한 페이지네이션
+  const getCurrentData = () => {
+    if (activeTab === 'swap') {
+      return swapTransactions.transactions
+    } else if (activeTab === 'liquidity') {
+      return liquidityTransactions.transactions
+    } else if (activeTab === 'liquidityPosition') {
+      return filteredLiquidityPositions
+    } else {
+      return filteredKuraPositions
+    }
+  }
 
-  const totalPages = Math.ceil(
-    activeTab === 'swap' || activeTab === 'liquidity'
-      ? currentTransactions.length / pageSize
-      : activeTab === 'liquidityPosition'
-        ? currentLiquidityPositions.length / pageSize
-        : currentKuraPositions.length / pageSize
-  )
+  const currentData = getCurrentData()
+  const totalPages = Math.ceil(currentData.length / pageSize)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -349,8 +194,8 @@ function DashboardContent() {
     let headers: string[] = []
     let filename = ''
 
-    if (activeTab === 'swap' || activeTab === 'liquidity') {
-      if (currentTransactions.length === 0) return
+    if (activeTab === 'swap') {
+      if (swapTransactions.transactions.length === 0) return
 
       headers = [
         'Time(UTC)',
@@ -365,7 +210,7 @@ function DashboardContent() {
         'Transaction ID'
       ]
 
-      csvData = currentTransactions.map(tx => [
+      csvData = swapTransactions.transactions.map(tx => [
         formatDate(tx.timestamp),
         tx.origin,
         tx.type,
@@ -378,9 +223,39 @@ function DashboardContent() {
         tx.transactionId
       ])
 
-      filename = `kura-dex-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`
+      filename = `kura-dex-swap-${new Date().toISOString().split('T')[0]}.csv`
+    } else if (activeTab === 'liquidity') {
+      if (liquidityTransactions.transactions.length === 0) return
+
+      headers = [
+        'Time(UTC)',
+        'User',
+        'Type',
+        'Pool Type',
+        'Token0',
+        'Token1',
+        'Token0 Amount',
+        'Token1 Amount',
+        'USD Value',
+        'Transaction ID'
+      ]
+
+      csvData = liquidityTransactions.transactions.map(tx => [
+        formatDate(tx.timestamp),
+        tx.origin,
+        tx.type,
+        tx.poolType,
+        tx.token0.symbol,
+        tx.token1.symbol,
+        tx.token0Amount,
+        tx.token1Amount,
+        tx.amountUSD,
+        tx.transactionId
+      ])
+
+      filename = `kura-dex-liquidity-${new Date().toISOString().split('T')[0]}.csv`
     } else if (activeTab === 'liquidityPosition') {
-      if (currentLiquidityPositions.length === 0) return
+      if (filteredLiquidityPositions.length === 0) return
 
       headers = [
         'Created Time',
@@ -393,7 +268,7 @@ function DashboardContent() {
         'Token1 Amount'
       ]
 
-      csvData = currentLiquidityPositions.map(pos => [
+      csvData = filteredLiquidityPositions.map(pos => [
         pos.createdTime,
         pos.user,
         pos.poolType,
@@ -406,7 +281,7 @@ function DashboardContent() {
 
       filename = `kura-liquidity-positions-${new Date().toISOString().split('T')[0]}.csv`
     } else if (activeTab === 'kuraPosition') {
-      if (currentKuraPositions.length === 0) return
+      if (filteredKuraPositions.length === 0) return
 
       headers = [
         'User',
@@ -418,7 +293,7 @@ function DashboardContent() {
         'Vesting'
       ]
 
-      csvData = currentKuraPositions.map(pos => [
+      csvData = filteredKuraPositions.map(pos => [
         pos.user,
         pos.usdValue,
         pos.kura,
@@ -451,7 +326,7 @@ function DashboardContent() {
     document.body.removeChild(link)
   }
 
-  if (loading) {
+  if (swapTransactions.loading || liquidityTransactions.loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">데이터를 불러오는 중...</div>
@@ -459,10 +334,10 @@ function DashboardContent() {
     )
   }
 
-  if (error) {
+  if (swapTransactions.error || liquidityTransactions.error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-600">에러가 발생했습니다: {error.message}</div>
+        <div className="text-xl text-red-600">에러가 발생했습니다: {swapTransactions.error?.message || liquidityTransactions.error?.message}</div>
       </div>
     )
   }
@@ -662,17 +537,17 @@ function DashboardContent() {
 
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              {activeTab === 'swap' && `총 ${currentTransactions.length}개의 거래가 있습니다.`}
-              {activeTab === 'liquidity' && `총 ${currentTransactions.length}개의 거래가 있습니다.`}
-              {activeTab === 'liquidityPosition' && `총 ${currentLiquidityPositions.length}개의 포지션이 있습니다.`}
-              {activeTab === 'kuraPosition' && `총 ${currentKuraPositions.length}개의 포지션이 있습니다.`}
+              {activeTab === 'swap' && `총 ${currentData.length}개의 거래가 있습니다.`}
+              {activeTab === 'liquidity' && `총 ${currentData.length}개의 거래가 있습니다.`}
+              {activeTab === 'liquidityPosition' && `총 ${filteredLiquidityPositions.length}개의 포지션이 있습니다.`}
+              {activeTab === 'kuraPosition' && `총 ${filteredKuraPositions.length}개의 포지션이 있습니다.`}
             </div>
             <button
               onClick={downloadCSV}
               disabled={
-                (activeTab === 'swap' || activeTab === 'liquidity') ? currentTransactions.length === 0 :
-                  activeTab === 'liquidityPosition' ? currentLiquidityPositions.length === 0 :
-                    currentKuraPositions.length === 0
+                (activeTab === 'swap' || activeTab === 'liquidity') ? currentData.length === 0 :
+                  activeTab === 'liquidityPosition' ? filteredLiquidityPositions.length === 0 :
+                    filteredKuraPositions.length === 0
               }
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -686,28 +561,28 @@ function DashboardContent() {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {activeTab === 'swap' && (
             <SwapTransactionTable
-              transactions={filteredTransactions.swaps}
+              transactions={swapTransactions.transactions}
               currentPage={currentPage}
               pageSize={pageSize}
             />
           )}
           {activeTab === 'liquidity' && (
             <LiquidityTransactionTable
-              transactions={filteredTransactions.liquidity}
+              transactions={liquidityTransactions.transactions}
               currentPage={currentPage}
               pageSize={pageSize}
             />
           )}
           {activeTab === 'liquidityPosition' && (
             <LiquidityPositionTable
-              positions={currentLiquidityPositions}
+              positions={filteredLiquidityPositions}
               currentPage={currentPage}
               pageSize={pageSize}
             />
           )}
           {activeTab === 'kuraPosition' && (
             <KuraPositionTable
-              positions={currentKuraPositions}
+              positions={filteredKuraPositions}
               currentPage={currentPage}
               pageSize={pageSize}
             />
