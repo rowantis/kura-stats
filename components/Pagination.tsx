@@ -45,7 +45,7 @@ export default function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+    <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-5">
       <div className="flex justify-between items-center w-full">
         <div className="flex items-center">
           <button

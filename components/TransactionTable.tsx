@@ -67,82 +67,64 @@ export default function TransactionTable({
       <table className="min-w-full bg-white border border-gray-200 rounded-lg">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               KSTime
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               User
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Type
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Pool Type
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Token0
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Token1
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Token0 Amount
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Token1 Amount
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               USD Value
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               TX
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Token0
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Token1
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Token0 Amount
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Token1 Amount
             </th>
           </tr>
         </thead>
         <tbody className="bg-gray-50 divide-y divide-gray-200">
           {currentTransactions.map((tx, index) => (
             <tr key={tx.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 {formatDate(tx.timestamp)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 <CopyButton
                   text={tx.origin}
                   label="유저"
                 />
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-5 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(tx.type)}`}>
                   {tx.type}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-5 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPoolTypeColor(tx.poolType)}`}>
                   {tx.poolType}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <CopyButton
-                  text={tx.token0.id}
-                  label="토큰0"
-                />
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <CopyButton
-                  text={tx.token1.id}
-                  label="토큰1"
-                />
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatAmount(tx.token0Amount)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatAmount(tx.token1Amount)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 {formatUSD(tx.amountUSD)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 <a
                   href={`https://seitrace.com/tx/${tx.transactionId}?chain=pacific-1`}
                   target="_blank"
@@ -151,6 +133,24 @@ export default function TransactionTable({
                 >
                   링크
                 </a>
+              </td>
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
+                <CopyButton
+                  text={tx.token0.id}
+                  label="토큰0"
+                />
+              </td>
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
+                <CopyButton
+                  text={tx.token1.id}
+                  label="토큰1"
+                />
+              </td>
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
+                {formatAmount(tx.token0Amount)}
+              </td>
+              <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
+                {formatAmount(tx.token1Amount)}
               </td>
             </tr>
           ))}

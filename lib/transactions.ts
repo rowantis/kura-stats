@@ -118,7 +118,7 @@ export function transformTransactions(data: GraphQLData): UnifiedTransaction[] {
   // 최신 거래부터 정렬
   return transactions.sort((a, b) =>
     new Date(Number(b.timestamp) * 1000).getTime() - new Date(Number(a.timestamp) * 1000).getTime()
-  )
+  ).filter(tx => tx.origin)
 }
 
 export function filterTransactionsByAddress(
@@ -137,4 +137,32 @@ export function filterTransactionsByType(
 ): UnifiedTransaction[] {
   if (!type || type === 'All') return transactions
   return transactions.filter(tx => tx.type === type)
+}
+
+export function filterTransactionsByToken(
+  transactions: UnifiedTransaction[],
+  tokenAddress: string
+): UnifiedTransaction[] {
+  if (!tokenAddress) return transactions
+  return transactions.filter(tx =>
+    tx.token0.id.toLowerCase() === tokenAddress.toLowerCase() ||
+    tx.token1.id.toLowerCase() === tokenAddress.toLowerCase()
+  )
+}
+
+export function filterTransactionsByPoolType(
+  transactions: UnifiedTransaction[],
+  poolType: string
+): UnifiedTransaction[] {
+  if (!poolType || poolType === 'All') return transactions
+
+  if (poolType === 'V2') {
+    return transactions.filter(tx => tx.poolType.startsWith('V2:'))
+  }
+
+  if (poolType === 'V3') {
+    return transactions.filter(tx => tx.poolType.startsWith('V3:'))
+  }
+
+  return transactions.filter(tx => tx.poolType === poolType)
 } 
