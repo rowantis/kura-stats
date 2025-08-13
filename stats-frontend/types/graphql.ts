@@ -119,4 +119,25 @@ export interface LiquidityTransaction {
   poolType: string
 }
 
-export type DexTransaction = SwapTransaction | LiquidityTransaction 
+export type DexTransaction = SwapTransaction | LiquidityTransaction
+
+export interface LiquidityPosition {
+  createdTime: string
+  user: string
+  poolType: string
+  usdValue: string
+  token0: Token
+  token1: Token
+  token0Amount: string
+  token1Amount: string
+}
+
+export interface KuraPosition {
+  user: string
+  usdValue: string
+  kura: string
+  xkura: string
+  stXkura: string
+  k33: string
+  vesting: string
+} 
