@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { SWAP_TRANSACTIONS_QUERY } from '@/lib/queries'
 import { transformTransactions } from '@/lib/transactions'
 import { SwapTransaction } from '@/types/graphql'
+import { parseFormattedDate } from '@/lib/utils'
 
 interface UseSwapTransactionsProps {
   pageSize: number
@@ -56,15 +57,13 @@ export function useSwapTransactions({
       )
     }
 
-    // 기간 필터링
     if (startDate || endDate) {
       filteredSwaps = filteredSwaps.filter(tx => {
-        const txTime = new Date(Number(tx.timestamp) * 1000)
-        const start = startDate ? new Date(startDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
-        const end = endDate ? new Date(endDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
+        const start = startDate ? new Date(parseFormattedDate(startDate) * 1000) : null
+        const end = endDate ? new Date(parseFormattedDate(endDate) * 1000) : null
 
-        if (start && txTime < start) return false
-        if (end && txTime > end) return false
+        if (start && Number(tx.timestamp) < Number(start)) return false
+        if (end && Number(tx.timestamp) > Number(end)) return false
         return true
       })
     }

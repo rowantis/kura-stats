@@ -34,15 +34,14 @@ export function formatUSD(amount: string): string {
 }
 
 export function formatDate(timestamp: string): string {
-  if (!timestamp) return ''
+  if (!timestamp) throw new Error('Invalid timestamp')
 
   let date: Date
 
   date = new Date(Number(timestamp) * 1000)
   // Invalid Date 체크
   if (isNaN(date.getTime())) {
-    console.warn('Invalid timestamp:', timestamp)
-    return 'Invalid Date'
+    throw new Error('Invalid timestamp')
   }
 
   // UTC 시간을 가져와서 기존 형식으로 포맷
@@ -55,6 +54,39 @@ export function formatDate(timestamp: string): string {
   return `${month}. ${day}. ${hours}:${minutes}:${seconds}`
 }
 
+// formatDate의 역함수: UTC 형식 날짜 문자열을 timestamp로 변환
+export function parseFormattedDate(formattedDate: string): number {
+  if (!formattedDate) {
+    throw new Error('Invalid formatted date')
+  }
+
+  try {
+    // "08. 13. 08:16:02" 형식을 파싱
+    const match = formattedDate.match(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/)
+    if (!match) {
+      throw new Error('Invalid formatted date format')
+    }
+
+    const [, month, day, hours, minutes, seconds] = match
+
+    // 현재 연도를 기준으로 UTC Date 객체 생성
+    const currentYear = new Date().getUTCFullYear()
+    const date = new Date(Date.UTC(
+      currentYear,
+      parseInt(month) - 1, // month는 0-based
+      parseInt(day),
+      parseInt(hours),
+      parseInt(minutes),
+      parseInt(seconds)
+    ))
+
+    // timestamp를 초 단위로 반환
+    return Math.floor(date.getTime() / 1000)
+  } catch (error) {
+    throw new Error('Invalid formatted date')
+  }
+}
+
 // Fee tier를 tick spacing으로 변환
 const FEE_TIER_TO_TICK_SPACING: Record<number, number> = {
   100: 1,
@@ -65,8 +97,27 @@ const FEE_TIER_TO_TICK_SPACING: Record<number, number> = {
   20000: 200,
 }
 
+const TICK_SPACING_TO_FEE_TIER: Record<number, number> = {
+  1: 100,
+  5: 250,
+  10: 500,
+  50: 3000,
+  100: 10000,
+  200: 20000,
+}
+
 export function getTickSpacing(feeTier: number): number {
-  return FEE_TIER_TO_TICK_SPACING[feeTier] || 0
+  if (!FEE_TIER_TO_TICK_SPACING[feeTier]) {
+    throw new Error('Invalid fee tier')
+  }
+  return FEE_TIER_TO_TICK_SPACING[feeTier]
+}
+
+export function getFeeTier(tickSpacing: number): number {
+  if (!TICK_SPACING_TO_FEE_TIER[tickSpacing]) {
+    throw new Error('Invalid tick spacing')
+  }
+  return TICK_SPACING_TO_FEE_TIER[tickSpacing]
 }
 
 // Pool 타입 결정

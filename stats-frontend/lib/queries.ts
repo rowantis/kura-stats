@@ -3,27 +3,7 @@ import { gql } from '@apollo/client'
 // Swap 거래 쿼리
 export const SWAP_TRANSACTIONS_QUERY = gql`
   query GetSwapTransactions($first: Int!, $skip: Int!) {
-    clSwaps(first: $first, skip: $skip) {
-      amount0
-      amount1
-      amountUSD
-      origin
-      pool {
-        feeTier
-      }
-      token0 {
-        symbol
-        id
-      }
-      token1 {
-        symbol
-        id
-      }
-      transaction {
-        id
-        timestamp
-      }
-    }
+  
     legacySwaps(first: $first, skip: $skip) {
       amount0In
       amount0Out
