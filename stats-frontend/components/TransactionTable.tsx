@@ -1,6 +1,6 @@
 import { DexTransaction } from '@/types/graphql'
 import { formatAddress, formatAmount, formatUSD, formatDate } from '@/lib/utils'
-import { Copy } from 'lucide-react'
+import CopyButton from './CopyButton'
 
 interface TransactionTableProps {
   transactions: DexTransaction[]
@@ -45,21 +45,6 @@ export default function TransactionTable({
     } catch (err) {
       console.error('Failed to copy: ', err)
     }
-  }
-
-  const CopyButton = ({ copyText, showText, label }: { copyText: string; showText: string; label: string }) => {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-900 font-mono">{showText}</span>
-        <button
-          onClick={() => copyToClipboard(copyText)}
-          className="p-1 hover:bg-gray-100 rounded transition-colors"
-          title={`${label} 주소 복사`}
-        >
-          <Copy className="w-4 h-4 text-gray-500 hover:text-gray-700" />
-        </button>
-      </div>
-    )
   }
 
   return (
