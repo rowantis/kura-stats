@@ -8,6 +8,8 @@ import { transformTransactions, filterTransactionsByAddress, filterTransactionsB
 import { SwapTransaction, LiquidityTransaction } from '@/types/graphql'
 import TransactionTable from '@/components/TransactionTable'
 import Pagination from '@/components/Pagination'
+import { Download } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
 
 const DEX_QUERY = gql`
   query MyQuery {
@@ -206,6 +208,55 @@ function DashboardContent() {
     setCurrentPage(1)
   }
 
+  const downloadCSV = () => {
+    if (currentTransactions.length === 0) return
+
+    // CSV 헤더
+    const headers = [
+      'KSTime',
+      'User',
+      'Type',
+      'Pool Type',
+      'Token0',
+      'Token1',
+      'Token0 Amount',
+      'Token1 Amount',
+      'USD Value',
+      'Transaction ID'
+    ]
+
+    // CSV 데이터 행
+    const csvData = currentTransactions.map(tx => [
+      formatDate(tx.timestamp),
+      tx.origin,
+      tx.type,
+      tx.poolType,
+      tx.token0.symbol,
+      tx.token1.symbol,
+      tx.token0Amount,
+      tx.token1Amount,
+      tx.amountUSD,
+      tx.transactionId
+    ])
+
+    // CSV 문자열 생성
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+
+    // 파일 다운로드
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `kura-dex-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -347,8 +398,18 @@ function DashboardContent() {
             </div>
           </div>
 
-          <div className="mt-4 text-sm text-gray-600">
-            총 {currentTransactions.length}개의 거래가 있습니다.
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              총 {currentTransactions.length}개의 거래가 있습니다.
+            </div>
+            <button
+              onClick={downloadCSV}
+              disabled={currentTransactions.length === 0}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              CSV 다운로드
+            </button>
           </div>
         </div>
 
