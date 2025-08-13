@@ -1,21 +1,41 @@
-import { LiquidityTransaction } from '@/types/graphql'
+import { DexTransaction } from '@/types/graphql'
 import { formatAddress, formatAmount, formatUSD, formatDate } from '@/lib/utils'
-import CopyButton from './CopyButton'
-import TypeChip from './TypeChip'
-import PoolTypeChip from './PoolTypeChip'
-import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from './BaseTable'
+import CopyButton from '../CopyButton'
+import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '../BaseTable'
 
-interface LiquidityTransactionTableProps {
-  transactions: LiquidityTransaction[]
+interface TransactionTableProps {
+  transactions: DexTransaction[]
   currentPage: number
   pageSize: number
 }
 
-export default function LiquidityTransactionTable({
+export default function TransactionTable({
   transactions,
   currentPage,
   pageSize
-}: LiquidityTransactionTableProps) {
+}: TransactionTableProps) {
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'Swap':
+        return 'text-blue-600 bg-blue-100'
+      case 'Mint':
+        return 'text-green-600 bg-green-100'
+      case 'Burn':
+        return 'text-red-600 bg-red-100'
+      default:
+        return 'text-gray-600 bg-gray-100'
+    }
+  }
+
+  const getPoolTypeColor = (poolType: string) => {
+    if (poolType.startsWith('V3:')) {
+      return 'text-purple-600 bg-purple-100'
+    } else if (poolType.startsWith('V2:')) {
+      return 'text-orange-600 bg-orange-100'
+    }
+    return 'text-gray-600 bg-gray-100'
+  }
+
   return (
     <BaseTable
       currentPage={currentPage}
@@ -46,10 +66,14 @@ export default function LiquidityTransactionTable({
               />
             </TableCell>
             <TableCell>
-              <TypeChip type={tx.type} />
+              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(tx.type)}`}>
+                {tx.type}
+              </span>
             </TableCell>
             <TableCell>
-              <PoolTypeChip poolType={tx.poolType} />
+              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPoolTypeColor(tx.poolType)}`}>
+                {tx.poolType}
+              </span>
             </TableCell>
             <TableCell>{formatUSD(tx.amountUSD)}</TableCell>
             <TableCell>

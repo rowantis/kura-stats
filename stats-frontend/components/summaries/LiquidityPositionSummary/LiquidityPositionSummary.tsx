@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { LiquidityPosition } from '@/types/graphql'
-import LiquidityPositionTable from '@/components/LiquidityPositionTable'
-import Pagination from '@/components/Pagination'
-import FilterSection from '@/components/FilterSection'
+import LiquidityPositionTable from '@/components/summaries/LiquidityPositionSummary/LiquidityPositionTable'
+import BaseSummary from '@/components/summaries/BaseSummary'
 import { parseFormattedDate } from '@/lib/utils'
 
 // 목업 데이터
@@ -41,11 +40,11 @@ const mockLiquidityPositions: LiquidityPosition[] = [
   }
 ]
 
-interface LiquidityPositionPageProps {
+interface LiquidityPositionSummaryProps {
   onTabChange: (tab: string) => void
 }
 
-export default function LiquidityPositionPage({ onTabChange }: LiquidityPositionPageProps) {
+export default function LiquidityPositionSummary({ onTabChange }: LiquidityPositionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
   const [startDate, setStartDate] = useState('')
@@ -89,7 +88,7 @@ export default function LiquidityPositionPage({ onTabChange }: LiquidityPosition
     setFilteredLiquidityPositions(filteredLiquidityPos)
   }, [addressFilter, poolTypeFilter, startDate, endDate])
 
-  const totalPages = Math.ceil(filteredLiquidityPositions.length / pageSize)
+
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -141,28 +140,25 @@ export default function LiquidityPositionPage({ onTabChange }: LiquidityPosition
   }
 
   return (
-    <div>
-      {/* 필터 섹션 */}
-      <FilterSection
-        activeTab="liquidityPosition"
-        addressFilter={addressFilter}
-        setAddressFilter={setAddressFilter}
-        typeFilter="All"
-        setTypeFilter={() => { }}
-        poolTypeFilter={poolTypeFilter}
-        setPoolTypeFilter={setPoolTypeFilter}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        currentDataLength={filteredLiquidityPositions.length}
-        filteredLiquidityPositionsLength={filteredLiquidityPositions.length}
-        filteredKuraPositionsLength={0}
-        onDownloadCSV={downloadCSV}
-      />
-
+    <BaseSummary
+      currentPage={currentPage}
+      pageSize={pageSize}
+      totalItems={filteredLiquidityPositions.length}
+      onPageChange={handlePageChange}
+      activeTab="liquidityPosition"
+      addressFilter={addressFilter}
+      setAddressFilter={setAddressFilter}
+      typeFilter="All"
+      setTypeFilter={() => { }}
+      poolTypeFilter={poolTypeFilter}
+      setPoolTypeFilter={setPoolTypeFilter}
+      startDate={startDate}
+      setStartDate={setStartDate}
+      endDate={endDate}
+      setEndDate={setEndDate}
+      setPageSize={setPageSize}
+      onDownloadCSV={downloadCSV}
+    >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <LiquidityPositionTable
@@ -170,15 +166,7 @@ export default function LiquidityPositionPage({ onTabChange }: LiquidityPosition
           currentPage={currentPage}
           pageSize={pageSize}
         />
-
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
       </div>
-    </div>
+    </BaseSummary>
   )
 } 

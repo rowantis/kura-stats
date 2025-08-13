@@ -1,6 +1,6 @@
 import { KuraPosition } from '@/types/graphql'
-import CopyButton from './CopyButton'
-import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from './BaseTable'
+import CopyButton from '../../CopyButton'
+import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '../../BaseTable'
 
 interface KuraPositionTableProps {
   positions: KuraPosition[]

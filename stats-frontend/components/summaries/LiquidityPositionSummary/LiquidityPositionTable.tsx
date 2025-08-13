@@ -1,7 +1,7 @@
 import { LiquidityPosition } from '@/types/graphql'
-import CopyButton from './CopyButton'
-import PoolTypeChip from './PoolTypeChip'
-import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from './BaseTable'
+import CopyButton from '../../CopyButton'
+import PoolTypeChip from '../../PoolTypeChip'
+import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '../../BaseTable'
 
 interface LiquidityPositionTableProps {
   positions: LiquidityPosition[]

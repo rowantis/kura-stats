@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { KuraPosition } from '@/types/graphql'
-import KuraPositionTable from '@/components/KuraPositionTable'
-import Pagination from '@/components/Pagination'
-import FilterSection from '@/components/FilterSection'
+import KuraPositionTable from '@/components/summaries/KuraPositionSummary/KuraPositionTable'
+import BaseSummary from '@/components/summaries/BaseSummary'
 
 // 목업 데이터
 const mockKuraPositions: KuraPosition[] = [
@@ -37,11 +36,11 @@ const mockKuraPositions: KuraPosition[] = [
   }
 ]
 
-interface KuraPositionPageProps {
+interface KuraPositionSummaryProps {
   onTabChange: (tab: string) => void
 }
 
-export default function KuraPositionPage({ onTabChange }: KuraPositionPageProps) {
+export default function KuraPositionSummary({ onTabChange }: KuraPositionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -62,7 +61,7 @@ export default function KuraPositionPage({ onTabChange }: KuraPositionPageProps)
     setFilteredKuraPositions(filteredKuraPos)
   }, [addressFilter])
 
-  const totalPages = Math.ceil(filteredKuraPositions.length / pageSize)
+
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -112,28 +111,25 @@ export default function KuraPositionPage({ onTabChange }: KuraPositionPageProps)
   }
 
   return (
-    <div>
-      {/* 필터 섹션 */}
-      <FilterSection
-        activeTab="kuraPosition"
-        addressFilter={addressFilter}
-        setAddressFilter={setAddressFilter}
-        typeFilter="All"
-        setTypeFilter={() => { }}
-        poolTypeFilter="All"
-        setPoolTypeFilter={() => { }}
-        startDate=""
-        setStartDate={() => { }}
-        endDate=""
-        setEndDate={() => { }}
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        currentDataLength={filteredKuraPositions.length}
-        filteredLiquidityPositionsLength={0}
-        filteredKuraPositionsLength={filteredKuraPositions.length}
-        onDownloadCSV={downloadCSV}
-      />
-
+    <BaseSummary
+      currentPage={currentPage}
+      pageSize={pageSize}
+      totalItems={filteredKuraPositions.length}
+      onPageChange={handlePageChange}
+      activeTab="kuraPosition"
+      addressFilter={addressFilter}
+      setAddressFilter={setAddressFilter}
+      typeFilter="All"
+      setTypeFilter={() => { }}
+      poolTypeFilter="All"
+      setPoolTypeFilter={() => { }}
+      startDate=""
+      setStartDate={() => { }}
+      endDate=""
+      setEndDate={() => { }}
+      setPageSize={setPageSize}
+      onDownloadCSV={downloadCSV}
+    >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <KuraPositionTable
@@ -141,15 +137,7 @@ export default function KuraPositionPage({ onTabChange }: KuraPositionPageProps)
           currentPage={currentPage}
           pageSize={pageSize}
         />
-
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
       </div>
-    </div>
+    </BaseSummary>
   )
 } 

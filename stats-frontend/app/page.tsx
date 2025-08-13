@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo-client'
-import SwapTransactionPage from '@/components/SwapTransactionPage'
-import LiquidityTransactionPage from '@/components/LiquidityTransactionPage'
-import LiquidityPositionPage from '@/components/LiquidityPositionPage'
-import KuraPositionPage from '@/components/KuraPositionPage'
+import SwapTransactionSummary from '@/components/summaries/SwapTransactionSummary/SwapTransactionSummary'
+import LiquidityTransactionSummary from '@/components/summaries/LiquidityTransactionSummary/LiquidityTransactionSummary'
+import LiquidityPositionSummary from '@/components/summaries/LiquidityPositionSummary/LiquidityPositionSummary'
+import KuraPositionSummary from '@/components/summaries/KuraPositionSummary/KuraPositionSummary'
 
 
 
@@ -71,16 +71,16 @@ function DashboardContent() {
 
         {/* 페이지 컴포넌트 */}
         {activeTab === 'swap' && (
-          <SwapTransactionPage onTabChange={handleTabChange} />
+          <SwapTransactionSummary onTabChange={handleTabChange} />
         )}
         {activeTab === 'liquidity' && (
-          <LiquidityTransactionPage onTabChange={handleTabChange} />
+          <LiquidityTransactionSummary onTabChange={handleTabChange} />
         )}
         {activeTab === 'liquidityPosition' && (
-          <LiquidityPositionPage onTabChange={handleTabChange} />
+          <LiquidityPositionSummary onTabChange={handleTabChange} />
         )}
         {activeTab === 'kuraPosition' && (
-          <KuraPositionPage onTabChange={handleTabChange} />
+          <KuraPositionSummary onTabChange={handleTabChange} />
         )}
       </div>
     </div>

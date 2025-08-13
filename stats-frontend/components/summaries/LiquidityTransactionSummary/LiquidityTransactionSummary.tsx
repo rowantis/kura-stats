@@ -1,43 +1,44 @@
 'use client'
 
 import { useState } from 'react'
-import { SwapTransaction } from '@/types/graphql'
-import SwapTransactionTable from '@/components/SwapTransactionTable'
-import Pagination from '@/components/Pagination'
-import FilterSection from '@/components/FilterSection'
+import { LiquidityTransaction } from '@/types/graphql'
+import LiquidityTransactionTable from '@/components/summaries/LiquidityTransactionSummary/LiquidityTransactionTable'
+import BaseSummary from '@/components/summaries/BaseSummary'
 import { formatDate } from '@/lib/utils'
-import { useSwapTransactions } from '@/hooks/useSwapTransactions'
+import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
 
-interface SwapTransactionPageProps {
+interface LiquidityTransactionSummaryProps {
   onTabChange: (tab: string) => void
 }
 
-export default function SwapTransactionPage({ onTabChange }: SwapTransactionPageProps) {
+export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTransactionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('All')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  const swapTransactions = useSwapTransactions({
+  const liquidityTransactions = useLiquidityTransactions({
     pageSize,
     currentPage,
     addressFilter,
+    typeFilter,
     poolTypeFilter,
     startDate,
     endDate,
     isActive: true
   })
 
-  const totalPages = Math.ceil(swapTransactions.transactions.length / pageSize)
+
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
 
   const downloadCSV = () => {
-    if (swapTransactions.transactions.length === 0) return
+    if (liquidityTransactions.transactions.length === 0) return
 
     const headers = [
       'Time(UTC)',
@@ -52,7 +53,7 @@ export default function SwapTransactionPage({ onTabChange }: SwapTransactionPage
       'Transaction ID'
     ]
 
-    const csvData = swapTransactions.transactions.map(tx => [
+    const csvData = liquidityTransactions.transactions.map(tx => [
       formatDate(tx.timestamp),
       tx.origin,
       tx.type,
@@ -65,7 +66,7 @@ export default function SwapTransactionPage({ onTabChange }: SwapTransactionPage
       tx.transactionId
     ])
 
-    const filename = `kura-dex-swap-${new Date().toISOString().split('T')[0]}.csv`
+    const filename = `kura-dex-liquidity-${new Date().toISOString().split('T')[0]}.csv`
 
     // CSV 문자열 생성
     const csvContent = [
@@ -85,7 +86,7 @@ export default function SwapTransactionPage({ onTabChange }: SwapTransactionPage
     document.body.removeChild(link)
   }
 
-  if (swapTransactions.loading) {
+  if (liquidityTransactions.loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">데이터를 불러오는 중...</div>
@@ -93,53 +94,42 @@ export default function SwapTransactionPage({ onTabChange }: SwapTransactionPage
     )
   }
 
-  if (swapTransactions.error) {
+  if (liquidityTransactions.error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-600">에러가 발생했습니다: {swapTransactions.error.message}</div>
+        <div className="text-xl text-red-600">에러가 발생했습니다: {liquidityTransactions.error.message}</div>
       </div>
     )
   }
 
   return (
-    <div>
-      {/* 필터 섹션 */}
-      <FilterSection
-        activeTab="swap"
-        addressFilter={addressFilter}
-        setAddressFilter={setAddressFilter}
-        typeFilter="All"
-        setTypeFilter={() => { }}
-        poolTypeFilter={poolTypeFilter}
-        setPoolTypeFilter={setPoolTypeFilter}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        currentDataLength={swapTransactions.transactions.length}
-        filteredLiquidityPositionsLength={0}
-        filteredKuraPositionsLength={0}
-        onDownloadCSV={downloadCSV}
-      />
-
+    <BaseSummary
+      currentPage={currentPage}
+      pageSize={pageSize}
+      totalItems={liquidityTransactions.transactions.length}
+      onPageChange={handlePageChange}
+      activeTab="liquidity"
+      addressFilter={addressFilter}
+      setAddressFilter={setAddressFilter}
+      typeFilter={typeFilter}
+      setTypeFilter={setTypeFilter}
+      poolTypeFilter={poolTypeFilter}
+      setPoolTypeFilter={setPoolTypeFilter}
+      startDate={startDate}
+      setStartDate={setStartDate}
+      endDate={endDate}
+      setEndDate={setEndDate}
+      setPageSize={setPageSize}
+      onDownloadCSV={downloadCSV}
+    >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <SwapTransactionTable
-          transactions={swapTransactions.transactions}
+        <LiquidityTransactionTable
+          transactions={liquidityTransactions.transactions}
           currentPage={currentPage}
           pageSize={pageSize}
         />
-
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
       </div>
-    </div>
+    </BaseSummary>
   )
 } 
