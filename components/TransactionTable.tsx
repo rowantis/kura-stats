@@ -108,7 +108,7 @@ export default function TransactionTable({
               <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 <CopyButton
                   copyText={tx.origin}
-                  showText={tx.origin}
+                  showText={formatAddress(tx.origin)}
                   label="유저"
                 />
               </td>
