@@ -5,8 +5,10 @@ import { useQuery, gql } from '@apollo/client'
 import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo-client'
 import { transformTransactions, filterTransactionsByAddress, filterTransactionsByType, filterTransactionsByToken, filterTransactionsByPoolType, filterTransactionsByDateRange } from '@/lib/transactions'
-import { SwapTransaction, LiquidityTransaction } from '@/types/graphql'
+import { SwapTransaction, LiquidityTransaction, LiquidityPosition, KuraPosition } from '@/types/graphql'
 import TransactionTable from '@/components/TransactionTable'
+import LiquidityPositionTable from '@/components/LiquidityPositionTable'
+import KuraPositionTable from '@/components/KuraPositionTable'
 import Pagination from '@/components/Pagination'
 import { Download } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
@@ -147,6 +149,70 @@ const DEX_QUERY = gql`
   }
 `
 
+// 목업 데이터
+const mockLiquidityPositions: LiquidityPosition[] = [
+  {
+    createdTime: '08. 13. 10:30:00',
+    user: '0x1234567890abcdef1234567890abcdef12345678',
+    poolType: 'V3:10ticks',
+    usdValue: '1250.50',
+    token0: { symbol: 'USDC', id: '0xa0b86a33e6441b8c4c8c0' },
+    token1: { symbol: 'ETH', id: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984' },
+    token0Amount: '1250.50',
+    token1Amount: '0.5'
+  },
+  {
+    createdTime: '08. 13. 09:15:00',
+    user: '0xabcdef1234567890abcdef1234567890abcdef12',
+    poolType: 'V2:stable',
+    usdValue: '3200.75',
+    token0: { symbol: 'USDT', id: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
+    token1: { symbol: 'USDC', id: '0xa0b86a33e6441b8c4c8c0' },
+    token0Amount: '3200.75',
+    token1Amount: '3200.75'
+  },
+  {
+    createdTime: '08. 13. 08:45:00',
+    user: '0x9876543210fedcba9876543210fedcba98765432',
+    poolType: 'V3:1ticks',
+    usdValue: '850.25',
+    token0: { symbol: 'WBTC', id: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599' },
+    token1: { symbol: 'ETH', id: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984' },
+    token0Amount: '0.025',
+    token1Amount: '1.2'
+  }
+]
+
+const mockKuraPositions: KuraPosition[] = [
+  {
+    user: '0x1234567890abcdef1234567890abcdef12345678',
+    usdValue: '5000.00',
+    kura: '10000.0',
+    xkura: '9500.0',
+    stXkura: '9000.0',
+    k33: '500.0',
+    vesting: '2024-12-31'
+  },
+  {
+    user: '0xabcdef1234567890abcdef1234567890abcdef12',
+    usdValue: '3200.75',
+    kura: '6400.0',
+    xkura: '6080.0',
+    stXkura: '5760.0',
+    k33: '320.0',
+    vesting: '2024-10-15'
+  },
+  {
+    user: '0x9876543210fedcba9876543210fedcba98765432',
+    usdValue: '1800.50',
+    kura: '3600.0',
+    xkura: '3420.0',
+    stXkura: '3240.0',
+    k33: '180.0',
+    vesting: '2025-03-20'
+  }
+]
+
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'swap' | 'liquidity' | 'liquidityPosition' | 'kuraPosition'>('swap')
   const [addressFilter, setAddressFilter] = useState('')
@@ -161,6 +227,9 @@ function DashboardContent() {
     swaps: SwapTransaction[]
     liquidity: LiquidityTransaction[]
   }>({ swaps: [], liquidity: [] })
+
+  const [filteredLiquidityPositions, setFilteredLiquidityPositions] = useState<LiquidityPosition[]>([])
+  const [filteredKuraPositions, setFilteredKuraPositions] = useState<KuraPosition[]>([])
 
   const { loading, error, data } = useQuery(DEX_QUERY)
 
@@ -204,8 +273,66 @@ function DashboardContent() {
     }
   }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter, startDate, endDate, activeTab])
 
+  // LiquidityPosition과 KuraPosition 필터링
+  useEffect(() => {
+    let filteredLiquidityPos = [...mockLiquidityPositions]
+    let filteredKuraPos = [...mockKuraPositions]
+
+    // 주소 필터링
+    if (addressFilter) {
+      filteredLiquidityPos = filteredLiquidityPos.filter(pos =>
+        pos.user.toLowerCase().includes(addressFilter.toLowerCase())
+      )
+      filteredKuraPos = filteredKuraPos.filter(pos =>
+        pos.user.toLowerCase().includes(addressFilter.toLowerCase())
+      )
+    }
+
+    // 토큰 필터링 (LiquidityPosition에서만)
+    if (tokenFilter && activeTab === 'liquidityPosition') {
+      filteredLiquidityPos = filteredLiquidityPos.filter(pos =>
+        pos.token0.id.toLowerCase().includes(tokenFilter.toLowerCase()) ||
+        pos.token1.id.toLowerCase().includes(tokenFilter.toLowerCase())
+      )
+    }
+
+    // 풀타입 필터링 (LiquidityPosition에서만)
+    if (poolTypeFilter !== 'All' && activeTab === 'liquidityPosition') {
+      filteredLiquidityPos = filteredLiquidityPos.filter(pos =>
+        pos.poolType === poolTypeFilter ||
+        (poolTypeFilter === 'V2' && pos.poolType.startsWith('V2:')) ||
+        (poolTypeFilter === 'V3' && pos.poolType.startsWith('V3:'))
+      )
+    }
+
+    // 기간 필터링 (LiquidityPosition에서만)
+    if ((startDate || endDate) && activeTab === 'liquidityPosition') {
+      filteredLiquidityPos = filteredLiquidityPos.filter(pos => {
+        const posTime = new Date(pos.createdTime.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z'))
+        const start = startDate ? new Date(startDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
+        const end = endDate ? new Date(endDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
+
+        if (start && posTime < start) return false
+        if (end && posTime > end) return false
+        return true
+      })
+    }
+
+    setFilteredLiquidityPositions(filteredLiquidityPos)
+    setFilteredKuraPositions(filteredKuraPos)
+  }, [addressFilter, tokenFilter, poolTypeFilter, startDate, endDate, activeTab])
+
   const currentTransactions = activeTab === 'swap' ? filteredTransactions.swaps : filteredTransactions.liquidity
-  const totalPages = Math.ceil(currentTransactions.length / pageSize)
+  const currentLiquidityPositions = filteredLiquidityPositions
+  const currentKuraPositions = filteredKuraPositions
+
+  const totalPages = Math.ceil(
+    activeTab === 'swap' || activeTab === 'liquidity'
+      ? currentTransactions.length / pageSize
+      : activeTab === 'liquidityPosition'
+        ? currentLiquidityPositions.length / pageSize
+        : currentKuraPositions.length / pageSize
+  )
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -217,35 +344,93 @@ function DashboardContent() {
   }
 
   const downloadCSV = () => {
-    if (currentTransactions.length === 0) return
+    let csvData: string[][] = []
+    let headers: string[] = []
+    let filename = ''
 
-    // CSV 헤더
-    const headers = [
-      'Time(UTC)',
-      'User',
-      'Type',
-      'Pool Type',
-      'Token0',
-      'Token1',
-      'Token0 Amount',
-      'Token1 Amount',
-      'USD Value',
-      'Transaction ID'
-    ]
+    if (activeTab === 'swap' || activeTab === 'liquidity') {
+      if (currentTransactions.length === 0) return
 
-    // CSV 데이터 행
-    const csvData = currentTransactions.map(tx => [
-      formatDate(tx.timestamp),
-      tx.origin,
-      tx.type,
-      tx.poolType,
-      tx.token0.symbol,
-      tx.token1.symbol,
-      tx.token0Amount,
-      tx.token1Amount,
-      tx.amountUSD,
-      tx.transactionId
-    ])
+      headers = [
+        'Time(UTC)',
+        'User',
+        'Type',
+        'Pool Type',
+        'Token0',
+        'Token1',
+        'Token0 Amount',
+        'Token1 Amount',
+        'USD Value',
+        'Transaction ID'
+      ]
+
+      csvData = currentTransactions.map(tx => [
+        formatDate(tx.timestamp),
+        tx.origin,
+        tx.type,
+        tx.poolType,
+        tx.token0.symbol,
+        tx.token1.symbol,
+        tx.token0Amount,
+        tx.token1Amount,
+        tx.amountUSD,
+        tx.transactionId
+      ])
+
+      filename = `kura-dex-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`
+    } else if (activeTab === 'liquidityPosition') {
+      if (currentLiquidityPositions.length === 0) return
+
+      headers = [
+        'Created Time',
+        'User',
+        'Pool Type',
+        'USD Value',
+        'Token0',
+        'Token1',
+        'Token0 Amount',
+        'Token1 Amount'
+      ]
+
+      csvData = currentLiquidityPositions.map(pos => [
+        pos.createdTime,
+        pos.user,
+        pos.poolType,
+        pos.usdValue,
+        pos.token0.symbol,
+        pos.token1.symbol,
+        pos.token0Amount,
+        pos.token1Amount
+      ])
+
+      filename = `kura-liquidity-positions-${new Date().toISOString().split('T')[0]}.csv`
+    } else if (activeTab === 'kuraPosition') {
+      if (currentKuraPositions.length === 0) return
+
+      headers = [
+        'User',
+        'USD Value',
+        'KURA',
+        'xKURA',
+        'st.xKURA',
+        'K33',
+        'Vesting'
+      ]
+
+      csvData = currentKuraPositions.map(pos => [
+        pos.user,
+        pos.usdValue,
+        pos.kura,
+        pos.xkura,
+        pos.stXkura,
+        pos.k33,
+        pos.vesting
+      ])
+
+      filename = `kura-positions-${new Date().toISOString().split('T')[0]}.csv`
+    }
+
+    if (csvData.length === 0) return
 
     // CSV 문자열 생성
     const csvContent = [
@@ -258,7 +443,7 @@ function DashboardContent() {
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `kura-dex-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', filename)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -476,11 +661,18 @@ function DashboardContent() {
 
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              총 {currentTransactions.length}개의 거래가 있습니다.
+              {activeTab === 'swap' && `총 ${currentTransactions.length}개의 거래가 있습니다.`}
+              {activeTab === 'liquidity' && `총 ${currentTransactions.length}개의 거래가 있습니다.`}
+              {activeTab === 'liquidityPosition' && `총 ${currentLiquidityPositions.length}개의 포지션이 있습니다.`}
+              {activeTab === 'kuraPosition' && `총 ${currentKuraPositions.length}개의 포지션이 있습니다.`}
             </div>
             <button
               onClick={downloadCSV}
-              disabled={currentTransactions.length === 0}
+              disabled={
+                (activeTab === 'swap' || activeTab === 'liquidity') ? currentTransactions.length === 0 :
+                  activeTab === 'liquidityPosition' ? currentLiquidityPositions.length === 0 :
+                    currentKuraPositions.length === 0
+              }
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4 mr-2" />
@@ -491,11 +683,34 @@ function DashboardContent() {
 
         {/* 거래 테이블 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <TransactionTable
-            transactions={currentTransactions}
-            currentPage={currentPage}
-            pageSize={pageSize}
-          />
+          {activeTab === 'swap' && (
+            <TransactionTable
+              transactions={currentTransactions}
+              currentPage={currentPage}
+              pageSize={pageSize}
+            />
+          )}
+          {activeTab === 'liquidity' && (
+            <TransactionTable
+              transactions={currentTransactions}
+              currentPage={currentPage}
+              pageSize={pageSize}
+            />
+          )}
+          {activeTab === 'liquidityPosition' && (
+            <LiquidityPositionTable
+              positions={currentLiquidityPositions}
+              currentPage={currentPage}
+              pageSize={pageSize}
+            />
+          )}
+          {activeTab === 'kuraPosition' && (
+            <KuraPositionTable
+              positions={currentKuraPositions}
+              currentPage={currentPage}
+              pageSize={pageSize}
+            />
+          )}
 
           {totalPages > 1 && (
             <Pagination
