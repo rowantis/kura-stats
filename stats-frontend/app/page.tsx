@@ -122,14 +122,14 @@ const DEX_QUERY = gql`
         id
         timestamp
       }
-      origin:sender
+      origin
     }
     
     legacyBurns {
       amount0
       amount1
       amountUSD
-      origin:sender
+      origin
       pool {
         isStable
         token0 {
