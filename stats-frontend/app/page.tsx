@@ -89,7 +89,7 @@ function DashboardContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  // Swap 거래 훅
+  // Swap 거래 훅 - 항상 로드
   const swapTransactions = useSwapTransactions({
     pageSize,
     currentPage,
@@ -97,10 +97,11 @@ function DashboardContent() {
     tokenFilter,
     poolTypeFilter,
     startDate,
-    endDate
+    endDate,
+    isActive: true // 항상 활성화
   })
 
-  // Liquidity 거래 훅
+  // Liquidity 거래 훅 - 항상 로드
   const liquidityTransactions = useLiquidityTransactions({
     pageSize,
     currentPage,
@@ -109,7 +110,8 @@ function DashboardContent() {
     tokenFilter,
     poolTypeFilter,
     startDate,
-    endDate
+    endDate,
+    isActive: true // 항상 활성화
   })
 
   // LiquidityPosition과 KuraPosition 필터링
@@ -326,7 +328,19 @@ function DashboardContent() {
     document.body.removeChild(link)
   }
 
-  if (swapTransactions.loading || liquidityTransactions.loading) {
+  // 현재 활성 탭의 로딩 상태
+  const isLoading = () => {
+    // 모든 쿼리가 완료되었을 때만 로딩 완료
+    return swapTransactions.loading || liquidityTransactions.loading
+  }
+
+  // 현재 활성 탭의 에러 상태
+  const getError = () => {
+    // 어떤 쿼리든 에러가 있으면 반환
+    return swapTransactions.error || liquidityTransactions.error
+  }
+
+  if (isLoading()) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">데이터를 불러오는 중...</div>
@@ -334,10 +348,11 @@ function DashboardContent() {
     )
   }
 
-  if (swapTransactions.error || liquidityTransactions.error) {
+  const error = getError()
+  if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-600">에러가 발생했습니다: {swapTransactions.error?.message || liquidityTransactions.error?.message}</div>
+        <div className="text-xl text-red-600">에러가 발생했습니다: {error.message}</div>
       </div>
     )
   }
@@ -355,7 +370,10 @@ function DashboardContent() {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8 px-6">
               <button
-                onClick={() => setActiveTab('swap')}
+                onClick={() => {
+                  setActiveTab('swap')
+                  setCurrentPage(1)
+                }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'swap'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -364,7 +382,10 @@ function DashboardContent() {
                 Swap
               </button>
               <button
-                onClick={() => setActiveTab('liquidity')}
+                onClick={() => {
+                  setActiveTab('liquidity')
+                  setCurrentPage(1)
+                }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'liquidity'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -373,7 +394,10 @@ function DashboardContent() {
                 Liquidity
               </button>
               <button
-                onClick={() => setActiveTab('liquidityPosition')}
+                onClick={() => {
+                  setActiveTab('liquidityPosition')
+                  setCurrentPage(1)
+                }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'liquidityPosition'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -382,7 +406,10 @@ function DashboardContent() {
                 Liquidity Positions
               </button>
               <button
-                onClick={() => setActiveTab('kuraPosition')}
+                onClick={() => {
+                  setActiveTab('kuraPosition')
+                  setCurrentPage(1)
+                }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'kuraPosition'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
