@@ -174,4 +174,61 @@ export function filterTransactionsByPoolType<T extends SwapTransaction | Liquidi
   }
 
   return transactions.filter(tx => tx.poolType === poolType)
+}
+
+export function filterTransactionsByDateRange<T extends SwapTransaction | LiquidityTransaction>(
+  transactions: T[],
+  startDate: string,
+  endDate: string
+): T[] {
+  if (!startDate && !endDate) return transactions
+
+  return transactions.filter(tx => {
+    const txDate = new Date(Number(tx.timestamp) * 1000)
+
+    if (startDate && endDate) {
+      const start = parseCustomDateTime(startDate)
+      const end = parseCustomDateTime(endDate)
+      if (start && end) {
+        return txDate >= start && txDate <= end
+      }
+    } else if (startDate) {
+      const start = parseCustomDateTime(startDate)
+      if (start) {
+        return txDate >= start
+      }
+    } else if (endDate) {
+      const end = parseCustomDateTime(endDate)
+      if (end) {
+        return txDate <= end
+      }
+    }
+
+    return true
+  })
+}
+
+// MM. DD. HH:MM:SS 형식을 파싱하는 함수
+function parseCustomDateTime(dateTimeStr: string): Date | null {
+  if (!dateTimeStr.trim()) return null
+
+  try {
+    // MM. DD. HH:MM:SS 형식 파싱
+    const match = dateTimeStr.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{1,2}):(\d{1,2}):(\d{1,2})$/)
+    if (!match) return null
+
+    const [, month, day, hour, minute, second] = match
+    const currentYear = new Date().getFullYear()
+
+    // 현재 연도 기준으로 Date 객체 생성
+    const date = new Date(currentYear, parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second))
+
+    // 유효한 날짜인지 확인
+    if (isNaN(date.getTime())) return null
+
+    return date
+  } catch (error) {
+    console.warn('Invalid date format:', dateTimeStr)
+    return null
+  }
 } 

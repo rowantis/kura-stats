@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import { ApolloProvider } from '@apollo/client'
 import { client } from '@/lib/apollo-client'
-import { transformTransactions, filterTransactionsByAddress, filterTransactionsByType, filterTransactionsByToken, filterTransactionsByPoolType } from '@/lib/transactions'
+import { transformTransactions, filterTransactionsByAddress, filterTransactionsByType, filterTransactionsByToken, filterTransactionsByPoolType, filterTransactionsByDateRange } from '@/lib/transactions'
 import { SwapTransaction, LiquidityTransaction } from '@/types/graphql'
 import TransactionTable from '@/components/TransactionTable'
 import Pagination from '@/components/Pagination'
@@ -153,6 +153,8 @@ function DashboardContent() {
   const [typeFilter, setTypeFilter] = useState('All')
   const [tokenFilter, setTokenFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState('All')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [filteredTransactions, setFilteredTransactions] = useState<{
@@ -191,10 +193,16 @@ function DashboardContent() {
         filteredLiquidity = filterTransactionsByPoolType(filteredLiquidity, poolTypeFilter)
       }
 
+      // 기간 필터링
+      if (startDate || endDate) {
+        filteredSwaps = filterTransactionsByDateRange(filteredSwaps, startDate, endDate)
+        filteredLiquidity = filterTransactionsByDateRange(filteredLiquidity, startDate, endDate)
+      }
+
       setFilteredTransactions({ swaps: filteredSwaps, liquidity: filteredLiquidity })
       setCurrentPage(1) // 필터 변경시 첫 페이지로
     }
-  }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter, activeTab])
+  }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter, startDate, endDate, activeTab])
 
   const currentTransactions = activeTab === 'swap' ? filteredTransactions.swaps : filteredTransactions.liquidity
   const totalPages = Math.ceil(currentTransactions.length / pageSize)
@@ -309,7 +317,7 @@ function DashboardContent() {
 
         {/* 필터 섹션 */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
                 주소 필터
@@ -380,6 +388,36 @@ function DashboardContent() {
               </select>
             </div>
 
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                시작일시
+              </label>
+              <input
+                type="text"
+                id="startDate"
+                placeholder="MM. DD. HH:MM:SS"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                종료일시
+              </label>
+              <input
+                type="text"
+                id="endDate"
+                placeholder="MM. DD. HH:MM:SS"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="pageSize" className="block text-sm font-medium text-gray-700 mb-2">
                 페이지당 항목 수
