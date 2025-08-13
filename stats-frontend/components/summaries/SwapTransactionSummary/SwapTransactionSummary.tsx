@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { SwapTransaction } from '@/types/graphql'
 import SwapTransactionTable from '@/components/summaries/SwapTransactionSummary/SwapTransactionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
 import { formatDate } from '@/lib/utils'
@@ -26,7 +25,6 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
     poolTypeFilter,
     startDate,
     endDate,
-    isActive: true
   })
 
 
@@ -36,7 +34,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
   }
 
   const downloadCSV = () => {
-    if (swapTransactions.transactions.length === 0) return
+    if (swapTransactions.length === 0) return
 
     const headers = [
       'Time(UTC)',
@@ -51,7 +49,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       'Transaction ID'
     ]
 
-    const csvData = swapTransactions.transactions.map(tx => [
+    const csvData = swapTransactions.map(tx => [
       formatDate(tx.timestamp),
       tx.origin,
       tx.type,
@@ -84,27 +82,11 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
     document.body.removeChild(link)
   }
 
-  if (swapTransactions.loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">데이터를 불러오는 중...</div>
-      </div>
-    )
-  }
-
-  if (swapTransactions.error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-600">에러가 발생했습니다: {swapTransactions.error.message}</div>
-      </div>
-    )
-  }
-
   return (
     <BaseSummary
       currentPage={currentPage}
       pageSize={pageSize}
-      totalItems={swapTransactions.transactions.length}
+      totalItems={swapTransactions.length}
       onPageChange={handlePageChange}
       activeTab="swap"
       addressFilter={addressFilter}
@@ -123,7 +105,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <SwapTransactionTable
-          transactions={swapTransactions.transactions}
+          transactions={swapTransactions}
           currentPage={currentPage}
           pageSize={pageSize}
         />

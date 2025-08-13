@@ -28,7 +28,6 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     poolTypeFilter,
     startDate,
     endDate,
-    isActive: true
   })
 
 
@@ -38,7 +37,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
   }
 
   const downloadCSV = () => {
-    if (liquidityTransactions.transactions.length === 0) return
+    if (liquidityTransactions.length === 0) return
 
     const headers = [
       'Time(UTC)',
@@ -53,7 +52,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       'Transaction ID'
     ]
 
-    const csvData = liquidityTransactions.transactions.map(tx => [
+    const csvData = liquidityTransactions.map(tx => [
       formatDate(tx.timestamp),
       tx.origin,
       tx.type,
@@ -86,27 +85,15 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     document.body.removeChild(link)
   }
 
-  if (liquidityTransactions.loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">데이터를 불러오는 중...</div>
-      </div>
-    )
-  }
 
-  if (liquidityTransactions.error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-600">에러가 발생했습니다: {liquidityTransactions.error.message}</div>
-      </div>
-    )
-  }
+
+
 
   return (
     <BaseSummary
       currentPage={currentPage}
       pageSize={pageSize}
-      totalItems={liquidityTransactions.transactions.length}
+      totalItems={liquidityTransactions.length}
       onPageChange={handlePageChange}
       activeTab="liquidity"
       addressFilter={addressFilter}
@@ -125,7 +112,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <LiquidityTransactionTable
-          transactions={liquidityTransactions.transactions}
+          transactions={liquidityTransactions}
           currentPage={currentPage}
           pageSize={pageSize}
         />

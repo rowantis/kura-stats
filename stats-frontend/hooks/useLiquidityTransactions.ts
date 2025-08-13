@@ -12,7 +12,6 @@ interface UseLiquidityTransactionsProps {
   poolTypeFilter?: string
   startDate?: string
   endDate?: string
-  isActive: boolean // 탭이 활성화되었는지 여부
 }
 
 export function useLiquidityTransactions({
@@ -23,18 +22,13 @@ export function useLiquidityTransactions({
   poolTypeFilter,
   startDate,
   endDate,
-  isActive
 }: UseLiquidityTransactionsProps) {
   const skip = (currentPage - 1) * pageSize
 
   const { loading, error, data } = useQuery(LIQUIDITY_TRANSACTIONS_QUERY, {
     variables: { first: pageSize, skip },
     fetchPolicy: 'cache-and-network',
-    skip: !isActive // 탭이 비활성화되어 있으면 쿼리 실행하지 않음
   })
-
-  // 쿼리 실행 시점 로그 (개발용)
-  console.log('useLiquidityTransactions - isActive:', isActive, 'loading:', loading, 'hasData:', !!data)
 
   const transactions = useMemo(() => {
     if (!data) return []
@@ -81,10 +75,5 @@ export function useLiquidityTransactions({
     return filteredLiquidity
   }, [data, addressFilter, typeFilter, poolTypeFilter, startDate, endDate])
 
-  return {
-    loading: isActive ? loading : false, // 비활성 탭일 때는 로딩 상태를 false로
-    error: isActive ? error : undefined, // 비활성 탭일 때는 에러를 undefined로
-    transactions,
-    totalCount: data ? data.clMints?.length + data.clBurns?.length + data.legacyMints?.length + data.legacyBurns?.length : 0
-  }
+  return transactions
 } 

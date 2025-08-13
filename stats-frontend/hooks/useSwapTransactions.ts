@@ -12,7 +12,6 @@ interface UseSwapTransactionsProps {
   poolTypeFilter?: string
   startDate?: string
   endDate?: string
-  isActive: boolean // 탭이 활성화되었는지 여부
 }
 
 export function useSwapTransactions({
@@ -22,18 +21,14 @@ export function useSwapTransactions({
   poolTypeFilter,
   startDate,
   endDate,
-  isActive
 }: UseSwapTransactionsProps) {
   const skip = (currentPage - 1) * pageSize
 
   const { loading, error, data } = useQuery(SWAP_TRANSACTIONS_QUERY, {
     variables: { first: pageSize, skip },
     fetchPolicy: 'cache-and-network',
-    skip: !isActive // 탭이 비활성화되어 있으면 쿼리 실행하지 않음
   })
 
-  // 쿼리 실행 시점 로그 (개발용)
-  console.log('useSwapTransactions - isActive:', isActive, 'loading:', loading, 'hasData:', !!data)
 
   const transactions = useMemo(() => {
     if (!data) return []
@@ -71,10 +66,5 @@ export function useSwapTransactions({
     return filteredSwaps
   }, [data, addressFilter, poolTypeFilter, startDate, endDate])
 
-  return {
-    loading: isActive ? loading : false, // 비활성 탭일 때는 로딩 상태를 false로
-    error: isActive ? error : undefined, // 비활성 탭일 때는 에러를 undefined로
-    transactions,
-    totalCount: data ? data.clSwaps?.length + data.legacySwaps?.length : 0
-  }
+  return transactions
 } 
