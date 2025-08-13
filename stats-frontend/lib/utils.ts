@@ -45,14 +45,14 @@ export function formatDate(timestamp: string): string {
     return 'Invalid Date'
   }
 
-  return date.toLocaleString('ko-KR', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  })
+  // UTC 시간을 가져와서 기존 형식으로 포맷
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  const hours = String(date.getUTCHours()).padStart(2, '0')
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+
+  return `${month}. ${day}. ${hours}:${minutes}:${seconds}`
 }
 
 // Fee tier를 tick spacing으로 변환

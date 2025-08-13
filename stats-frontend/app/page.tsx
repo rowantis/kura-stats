@@ -221,7 +221,7 @@ function DashboardContent() {
 
     // CSV 헤더
     const headers = [
-      'KSTime',
+      'Time(UTC)',
       'User',
       'Type',
       'Pool Type',

@@ -68,7 +68,7 @@ export default function TransactionTable({
         <thead className="bg-gray-50">
           <tr>
             <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              KSTime
+              Time(UTC)
             </th>
             <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               User
