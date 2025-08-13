@@ -9,7 +9,6 @@ interface UseLiquidityTransactionsProps {
   currentPage: number
   addressFilter?: string
   typeFilter?: string
-  tokenFilter?: string
   poolTypeFilter?: string
   startDate?: string
   endDate?: string
@@ -21,7 +20,6 @@ export function useLiquidityTransactions({
   currentPage,
   addressFilter,
   typeFilter,
-  tokenFilter,
   poolTypeFilter,
   startDate,
   endDate,
@@ -58,14 +56,6 @@ export function useLiquidityTransactions({
       )
     }
 
-    // 토큰 필터링
-    if (tokenFilter) {
-      filteredLiquidity = filteredLiquidity.filter(tx =>
-        tx.token0.id.toLowerCase().includes(tokenFilter.toLowerCase()) ||
-        tx.token1.id.toLowerCase().includes(tokenFilter.toLowerCase())
-      )
-    }
-
     // 풀타입 필터링
     if (poolTypeFilter && poolTypeFilter !== 'All') {
       filteredLiquidity = filteredLiquidity.filter(tx =>
@@ -89,7 +79,7 @@ export function useLiquidityTransactions({
     }
 
     return filteredLiquidity
-  }, [data, addressFilter, typeFilter, tokenFilter, poolTypeFilter, startDate, endDate])
+  }, [data, addressFilter, typeFilter, poolTypeFilter, startDate, endDate])
 
   return {
     loading: isActive ? loading : false, // 비활성 탭일 때는 로딩 상태를 false로

@@ -9,7 +9,7 @@ import LiquidityTransactionTable from '@/components/LiquidityTransactionTable'
 import LiquidityPositionTable from '@/components/LiquidityPositionTable'
 import KuraPositionTable from '@/components/KuraPositionTable'
 import Pagination from '@/components/Pagination'
-import { Download } from 'lucide-react'
+import FilterSection from '@/components/FilterSection'
 import { formatDate } from '@/lib/utils'
 import { useSwapTransactions } from '@/hooks/useSwapTransactions'
 import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
@@ -82,7 +82,6 @@ function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'swap' | 'liquidity' | 'liquidityPosition' | 'kuraPosition'>('swap')
   const [addressFilter, setAddressFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
-  const [tokenFilter, setTokenFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState('All')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -94,7 +93,6 @@ function DashboardContent() {
     pageSize,
     currentPage,
     addressFilter,
-    tokenFilter,
     poolTypeFilter,
     startDate,
     endDate,
@@ -107,7 +105,6 @@ function DashboardContent() {
     currentPage,
     addressFilter,
     typeFilter,
-    tokenFilter,
     poolTypeFilter,
     startDate,
     endDate,
@@ -132,13 +129,6 @@ function DashboardContent() {
       )
     }
 
-    // 토큰 필터링 (LiquidityPosition에서만)
-    if (tokenFilter && activeTab === 'liquidityPosition') {
-      filteredLiquidityPos = filteredLiquidityPos.filter(pos =>
-        pos.token0.id.toLowerCase().includes(tokenFilter.toLowerCase()) ||
-        pos.token1.id.toLowerCase().includes(tokenFilter.toLowerCase())
-      )
-    }
 
     // 풀타입 필터링 (LiquidityPosition에서만)
     if (poolTypeFilter !== 'All' && activeTab === 'liquidityPosition') {
@@ -164,7 +154,7 @@ function DashboardContent() {
 
     setFilteredLiquidityPositions(filteredLiquidityPos)
     setFilteredKuraPositions(filteredKuraPos)
-  }, [addressFilter, tokenFilter, poolTypeFilter, startDate, endDate, activeTab])
+  }, [addressFilter, poolTypeFilter, startDate, endDate, activeTab])
 
   // 현재 탭의 데이터에 대한 페이지네이션
   const getCurrentData = () => {
@@ -184,11 +174,6 @@ function DashboardContent() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-  }
-
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize)
-    setCurrentPage(1)
   }
 
   const downloadCSV = () => {
@@ -422,167 +407,25 @@ function DashboardContent() {
         </div>
 
         {/* 필터 섹션 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                주소 필터
-              </label>
-              <input
-                type="text"
-                id="address"
-                placeholder="0x..."
-                value={addressFilter}
-                onChange={(e) => setAddressFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              />
-            </div>
-
-            {activeTab === 'liquidity' && (
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                  거래 타입
-                </label>
-                <select
-                  id="type"
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-                >
-                  <option value="All">전체</option>
-                  <option value="Mint">Mint</option>
-                  <option value="Burn">Burn</option>
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-2">
-                토큰 필터
-              </label>
-              <input
-                type="text"
-                id="token"
-                placeholder="0x..."
-                value={tokenFilter}
-                onChange={(e) => setTokenFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="poolType" className="block text-sm font-medium text-gray-700 mb-2">
-                풀 타입
-              </label>
-              <select
-                id="poolType"
-                value={poolTypeFilter}
-                onChange={(e) => setPoolTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              >
-                <option value="All">전체</option>
-                <option value="V2">V2</option>
-                <option value="V3">V3</option>
-                <option value="V2:volatile">V2:volatile</option>
-                <option value="V2:stable">V2:stable</option>
-                <option value="V3:1ticks">V3:1ticks</option>
-                <option value="V3:5ticks">V3:5ticks</option>
-                <option value="V3:10ticks">V3:10ticks</option>
-                <option value="V3:50ticks">V3:50ticks</option>
-                <option value="V3:100ticks">V3:100ticks</option>
-                <option value="V3:200ticks">V3:200ticks</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                시작일시
-              </label>
-              <input
-                type="text"
-                id="startDate"
-                placeholder="MM. DD. HH:MM:SS"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                종료일시
-              </label>
-              <input
-                type="text"
-                id="endDate"
-                placeholder="MM. DD. HH:MM:SS"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="init" className="block text-sm font-medium text-gray-700 mb-2">
-                <br />
-              </label>
-              <button
-                onClick={() => {
-                  setAddressFilter('')
-                  setTypeFilter('All')
-                  setTokenFilter('')
-                  setPoolTypeFilter('All')
-                  setStartDate('')
-                  setEndDate('')
-                  setPageSize(20)
-                }}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-              >
-                초기화
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="pageSize" className="block text-sm font-medium text-gray-700 mb-2">
-                페이지당 항목 수
-              </label>
-              <select
-                id="pageSize"
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              {activeTab === 'swap' && `총 ${currentData.length}개의 거래가 있습니다.`}
-              {activeTab === 'liquidity' && `총 ${currentData.length}개의 거래가 있습니다.`}
-              {activeTab === 'liquidityPosition' && `총 ${filteredLiquidityPositions.length}개의 포지션이 있습니다.`}
-              {activeTab === 'kuraPosition' && `총 ${filteredKuraPositions.length}개의 포지션이 있습니다.`}
-            </div>
-            <button
-              onClick={downloadCSV}
-              disabled={
-                (activeTab === 'swap' || activeTab === 'liquidity') ? currentData.length === 0 :
-                  activeTab === 'liquidityPosition' ? filteredLiquidityPositions.length === 0 :
-                    filteredKuraPositions.length === 0
-              }
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              CSV 다운로드
-            </button>
-          </div>
-        </div>
+        <FilterSection
+          activeTab={activeTab}
+          addressFilter={addressFilter}
+          setAddressFilter={setAddressFilter}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+          poolTypeFilter={poolTypeFilter}
+          setPoolTypeFilter={setPoolTypeFilter}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          currentDataLength={currentData.length}
+          filteredLiquidityPositionsLength={filteredLiquidityPositions.length}
+          filteredKuraPositionsLength={filteredKuraPositions.length}
+          onDownloadCSV={downloadCSV}
+        />
 
         {/* 거래 테이블 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">

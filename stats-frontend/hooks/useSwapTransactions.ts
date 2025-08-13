@@ -8,7 +8,6 @@ interface UseSwapTransactionsProps {
   pageSize: number
   currentPage: number
   addressFilter?: string
-  tokenFilter?: string
   poolTypeFilter?: string
   startDate?: string
   endDate?: string
@@ -19,7 +18,6 @@ export function useSwapTransactions({
   pageSize,
   currentPage,
   addressFilter,
-  tokenFilter,
   poolTypeFilter,
   startDate,
   endDate,
@@ -49,14 +47,6 @@ export function useSwapTransactions({
       )
     }
 
-    // 토큰 필터링
-    if (tokenFilter) {
-      filteredSwaps = filteredSwaps.filter(tx =>
-        tx.token0.id.toLowerCase().includes(tokenFilter.toLowerCase()) ||
-        tx.token1.id.toLowerCase().includes(tokenFilter.toLowerCase())
-      )
-    }
-
     // 풀타입 필터링
     if (poolTypeFilter && poolTypeFilter !== 'All') {
       filteredSwaps = filteredSwaps.filter(tx =>
@@ -80,7 +70,7 @@ export function useSwapTransactions({
     }
 
     return filteredSwaps
-  }, [data, addressFilter, tokenFilter, poolTypeFilter, startDate, endDate])
+  }, [data, addressFilter, poolTypeFilter, startDate, endDate])
 
   return {
     loading: isActive ? loading : false, // 비활성 탭일 때는 로딩 상태를 false로
