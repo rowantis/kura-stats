@@ -47,12 +47,12 @@ export default function TransactionTable({
     }
   }
 
-  const CopyButton = ({ text, label }: { text: string; label: string }) => {
+  const CopyButton = ({ copyText, showText, label }: { copyText: string; showText: string; label: string }) => {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-900 font-mono">{formatAddress(text)}</span>
+        <span className="text-sm text-gray-900 font-mono">{showText}</span>
         <button
-          onClick={() => copyToClipboard(text)}
+          onClick={() => copyToClipboard(copyText)}
           className="p-1 hover:bg-gray-100 rounded transition-colors"
           title={`${label} 주소 복사`}
         >
@@ -107,7 +107,8 @@ export default function TransactionTable({
               </td>
               <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 <CopyButton
-                  text={tx.origin}
+                  copyText={tx.origin}
+                  showText={tx.origin}
                   label="유저"
                 />
               </td>
@@ -136,13 +137,15 @@ export default function TransactionTable({
               </td>
               <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 <CopyButton
-                  text={tx.token0.id}
+                  copyText={tx.token0.id}
+                  showText={tx.token0.symbol}
                   label="토큰0"
                 />
               </td>
               <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-900">
                 <CopyButton
-                  text={tx.token1.id}
+                  copyText={tx.token1.id}
+                  showText={tx.token1.symbol}
                   label="토큰1"
                 />
               </td>
