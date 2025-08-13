@@ -39,8 +39,6 @@ export function formatDate(timestamp: string): string {
   let date: Date
 
   date = new Date(Number(timestamp) * 1000)
-  console.log(date)
-
   // Invalid Date 체크
   if (isNaN(date.getTime())) {
     console.warn('Invalid timestamp:', timestamp)
