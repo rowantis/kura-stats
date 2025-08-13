@@ -4,7 +4,7 @@
   "private": true,
   "workspaces": [
     "stats-frontend",
-    "lib/*"
+    "packages/**/*"
   ],
   "scripts": {
     "build": "turbo run build",

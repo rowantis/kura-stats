@@ -107,3 +107,8 @@ dist
 # Temporary folders
 tmp/
 temp/
+
+
+.turbo
+.turbo/**/*.log
+packages/sdks/**/public-env.json

@@ -1,0 +1,13 @@
+[
+  {
+    "chainId": 1329,
+    "useMultiProviderProb": 1,
+    "latencyEvaluationSampleProb": 0.1,
+    "healthCheckSampleProb": 0.1,
+    "providerInitialWeights": [1],
+    "providerUrls": [
+      "WEB3_RPC_1329"
+    ]
+  }
+]
+
