@@ -34,14 +34,14 @@ export function formatUSD(amount: string): string {
 }
 
 export function formatDate(timestamp: string): string {
-  if (!timestamp) throw new Error('Invalid timestamp')
+  if (!timestamp) return ''
 
   let date: Date
 
   date = new Date(Number(timestamp) * 1000)
   // Invalid Date 체크
   if (isNaN(date.getTime())) {
-    throw new Error('Invalid timestamp')
+    return ''
   }
 
   // UTC 시간을 가져와서 기존 형식으로 포맷
@@ -57,14 +57,14 @@ export function formatDate(timestamp: string): string {
 // formatDate의 역함수: UTC 형식 날짜 문자열을 timestamp로 변환
 export function parseFormattedDate(formattedDate: string): number {
   if (!formattedDate) {
-    throw new Error('Invalid formatted date')
+    return 0
   }
 
   try {
     // "08. 13. 08:16:02" 형식을 파싱
     const match = formattedDate.match(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/)
     if (!match) {
-      throw new Error('Invalid formatted date format')
+      return 0
     }
 
     const [, month, day, hours, minutes, seconds] = match
@@ -83,7 +83,7 @@ export function parseFormattedDate(formattedDate: string): number {
     // timestamp를 초 단위로 반환
     return Math.floor(date.getTime() / 1000)
   } catch (error) {
-    throw new Error('Invalid formatted date')
+    return 0
   }
 }
 
