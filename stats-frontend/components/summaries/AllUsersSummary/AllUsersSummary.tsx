@@ -58,13 +58,21 @@ export default function AllUsersSummary({ onTabChange }: AllUsersSummaryProps) {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">All Users</h2>
-          <button
-            onClick={handleFetchData}
-            disabled={isLoading || swapsLoading || liquidityLoading || kuraLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? '조회 중...' : '조회'}
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={handleFetchData}
+              disabled={isLoading || swapsLoading || liquidityLoading || kuraLoading}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? '조회 중...' : '조회'}
+            </button>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('downloadCSV'))}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              CSV 다운로드
+            </button>
+          </div>
         </div>
 
         <AllUsersTable

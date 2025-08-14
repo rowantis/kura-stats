@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useSwapTransactions } from '@/hooks/useSwapTransactions'
 import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
 import { useKuraPositions } from '@/hooks/useKuraPositions'
@@ -38,6 +38,63 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
   })
 
   const { positions: kuraPositions } = useKuraPositions()
+
+  // CSV 다운로드 함수
+  const downloadCSV = () => {
+    if (!aggregatedUserData.length) {
+      alert('다운로드할 데이터가 없습니다. 먼저 조회를 실행해주세요.')
+      return
+    }
+
+    const headers = [
+      'User',
+      'Tx Count',
+      'Trade Volume ($)',
+      'Liquidity Net ($)',
+      'Kura',
+      'xKura',
+      'st xKura',
+      'K33',
+      'Vestings'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      ...aggregatedUserData.map(row => [
+        row.user,
+        row.txCount,
+        row.tradeVolume.toFixed(2),
+        row.liquidityNet.toFixed(2),
+        formatEther(BigInt(row.kura)).toString(),
+        formatEther(BigInt(row.xkura)).toString(),
+        formatEther(BigInt(row.stXkura)).toString(),
+        formatEther(BigInt(row.k33)).toString(),
+        formatEther(BigInt(row.vesting)).toString()
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `all-users-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  // CSV 다운로드 이벤트 리스너
+  useEffect(() => {
+    const handleDownloadCSV = () => {
+      downloadCSV()
+    }
+
+    window.addEventListener('downloadCSV', handleDownloadCSV)
+    return () => {
+      window.removeEventListener('downloadCSV', handleDownloadCSV)
+    }
+  }, [])
 
   // 사용자별 데이터 집계
   const aggregatedUserData = useMemo(() => {
@@ -160,35 +217,35 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
       header: 'Kura',
       accessor: 'kura' as keyof UserData,
       cell: (value: any) => (
-        <span className="text-sm font-medium">{formatEther(value)}</span>
+        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
       )
     },
     {
       header: 'xKura',
       accessor: 'xkura' as keyof UserData,
       cell: (value: any) => (
-        <span className="text-sm font-medium">{formatEther(value)}</span>
+        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
       )
     },
     {
       header: 'st xKura',
       accessor: 'stXkura' as keyof UserData,
       cell: (value: any) => (
-        <span className="text-sm font-medium">{formatEther(value)}</span>
+        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
       )
     },
     {
       header: 'K33',
       accessor: 'k33' as keyof UserData,
       cell: (value: any) => (
-        <span className="text-sm font-medium">{formatEther(value)}</span>
+        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
       )
     },
     {
       header: 'Vestings',
       accessor: 'vesting' as keyof UserData,
       cell: (value: any) => (
-        <span className="text-sm font-medium">{formatEther(value)}</span>
+        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
       )
     }
   ]
