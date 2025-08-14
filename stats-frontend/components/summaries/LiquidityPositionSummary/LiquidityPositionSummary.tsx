@@ -1,44 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { LiquidityPosition } from '@/types/graphql'
+import { useState } from 'react'
 import LiquidityPositionTable from '@/components/summaries/LiquidityPositionSummary/LiquidityPositionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
-import { parseFormattedDate } from '@/lib/utils'
-
-// 목업 데이터
-const mockLiquidityPositions: LiquidityPosition[] = [
-  {
-    createdTime: '08. 13. 10:30:00',
-    user: '0x1234567890abcdef1234567890abcdef12345678',
-    poolType: 'V3:10ticks',
-    usdValue: '1250.50',
-    token0: { symbol: 'USDC', id: '0xa0b86a33e6441b8c4c8c0' },
-    token1: { symbol: 'ETH', id: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984' },
-    token0Amount: '1250.50',
-    token1Amount: '0.5'
-  },
-  {
-    createdTime: '08. 13. 09:15:00',
-    user: '0xabcdef1234567890abcdef1234567890abcdef12',
-    poolType: 'V2:stable',
-    usdValue: '3200.75',
-    token0: { symbol: 'USDT', id: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
-    token1: { symbol: 'USDC', id: '0xa0b86a33e6441b8c4c8c0' },
-    token0Amount: '3200.75',
-    token1Amount: '3200.75'
-  },
-  {
-    createdTime: '08. 13. 08:45:00',
-    user: '0x9876543210fedcba9876543210fedcba98765432',
-    poolType: 'V3:1ticks',
-    usdValue: '850.25',
-    token0: { symbol: 'WBTC', id: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599' },
-    token1: { symbol: 'ETH', id: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984' },
-    token0Amount: '0.025',
-    token1Amount: '1.2'
-  }
-]
+import { useLiquidityPositions } from '@/hooks/useLiquidityPositions'
 
 interface LiquidityPositionSummaryProps {
   onTabChange: (tab: string) => void
@@ -47,46 +12,22 @@ interface LiquidityPositionSummaryProps {
 export default function LiquidityPositionSummary({ onTabChange }: LiquidityPositionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  // LiquidityPosition 필터링
-  const [filteredLiquidityPositions, setFilteredLiquidityPositions] = useState<LiquidityPosition[]>([])
-
-  useEffect(() => {
-    let filteredLiquidityPos = [...mockLiquidityPositions]
-
-    // 주소 필터링
-    if (addressFilter) {
-      filteredLiquidityPos = filteredLiquidityPos.filter(pos =>
-        pos.user.toLowerCase().includes(addressFilter.toLowerCase())
-      )
-    }
-
-    // 풀타입 필터링
-    if (poolTypeFilter !== 'All') {
-      filteredLiquidityPos = filteredLiquidityPos.filter(pos =>
-        pos.poolType === poolTypeFilter ||
-        (poolTypeFilter === 'V2' && pos.poolType.startsWith('V2:')) ||
-        (poolTypeFilter === 'V3' && pos.poolType.startsWith('V3:'))
-      )
-    }
-
-    // 기간 필터링
-    if (startDate || endDate) {
-      filteredLiquidityPos = filteredLiquidityPos.filter(pos => {
-        const posTime = parseFormattedDate(pos.createdTime)
-
-        if (startDate && Number(posTime) < parseFormattedDate(startDate)) return false
-        if (endDate && Number(posTime) > parseFormattedDate(endDate)) return false
-        return true
-      })
-    }
-
-    setFilteredLiquidityPositions(filteredLiquidityPos)
-  }, [addressFilter, poolTypeFilter, startDate, endDate])
+  const {
+    positions: liquidityPositions,
+    loading,
+    error,
+    hasMoreData,
+    loadedPages,
+    showAll
+  } = useLiquidityPositions({
+    pageSize,
+    currentPage,
+    addressFilter,
+    poolTypeFilter,
+  })
 
 
 
@@ -95,10 +36,9 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
   }
 
   const downloadCSV = () => {
-    if (filteredLiquidityPositions.length === 0) return
+    if (liquidityPositions.length === 0) return
 
     const headers = [
-      'Created Time',
       'User',
       'Pool Type',
       'USD Value',
@@ -108,8 +48,7 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
       'Token1 Amount'
     ]
 
-    const csvData = filteredLiquidityPositions.map(pos => [
-      pos.createdTime,
+    const csvData = liquidityPositions.map((pos: any) => [
       pos.user,
       pos.poolType,
       pos.usdValue,
@@ -143,7 +82,7 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
     <BaseSummary
       currentPage={currentPage}
       pageSize={pageSize}
-      totalItems={filteredLiquidityPositions.length}
+      totalItems={liquidityPositions.length}
       onPageChange={handlePageChange}
       activeTab="liquidityPosition"
       addressFilter={addressFilter}
@@ -152,17 +91,21 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
       setTypeFilter={() => { }}
       poolTypeFilter={poolTypeFilter}
       setPoolTypeFilter={setPoolTypeFilter}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
+      startTimestamp=""
+      setStartTimestamp={() => { }}
+      endTimestamp=""
+      setEndTimestamp={() => { }}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
+      hasMoreData={hasMoreData}
+      loadedPages={loadedPages}
+      onLoadMore={() => Promise.resolve()}
+      onShowAll={showAll}
     >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <LiquidityPositionTable
-          positions={filteredLiquidityPositions}
+          positions={liquidityPositions}
           currentPage={currentPage}
           pageSize={pageSize}
         />

@@ -15,19 +15,28 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
   const [addressFilter, setAddressFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startTimestamp, setStartTimestamp] = useState('')
+  const [endTimestamp, setEndTimestamp] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  const liquidityTransactions = useLiquidityTransactions({
+  const {
+    transactions: liquidityTransactions,
+    loading,
+    error,
+    hasMoreData,
+    loadedPages,
+    loadMore,
+    showAll,
+    filteredTransactionsLength
+  } = useLiquidityTransactions({
     pageSize,
     currentPage,
     addressFilter,
     typeFilter,
     poolTypeFilter,
-    startDate,
-    endDate,
+    startTimestamp,
+    endTimestamp,
   })
 
 
@@ -93,7 +102,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     <BaseSummary
       currentPage={currentPage}
       pageSize={pageSize}
-      totalItems={liquidityTransactions.length}
+      totalItems={filteredTransactionsLength}
       onPageChange={handlePageChange}
       activeTab="liquidity"
       addressFilter={addressFilter}
@@ -102,12 +111,16 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       setTypeFilter={setTypeFilter}
       poolTypeFilter={poolTypeFilter}
       setPoolTypeFilter={setPoolTypeFilter}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
+      startTimestamp={startTimestamp}
+      setStartTimestamp={setStartTimestamp}
+      endTimestamp={endTimestamp}
+      setEndTimestamp={setEndTimestamp}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
+      hasMoreData={hasMoreData}
+      loadedPages={loadedPages}
+      onLoadMore={loadMore}
+      onShowAll={showAll}
     >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

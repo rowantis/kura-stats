@@ -122,7 +122,6 @@ export interface LiquidityTransaction {
 export type DexTransaction = SwapTransaction | LiquidityTransaction
 
 export interface LiquidityPosition {
-  createdTime: string
   user: string
   poolType: string
   usdValue: string
@@ -134,10 +133,29 @@ export interface LiquidityPosition {
 
 export interface KuraPosition {
   user: string
-  usdValue: string
   kura: string
   xkura: string
   stXkura: string
   k33: string
   vesting: string
+}
+
+// 새로운 GraphQL 쿼리 타입들
+export interface XShadowPosition {
+  stakedBalance: string
+  vestedBalance: string
+  x33Balance: string
+  balance: string
+  owner: string
+}
+
+export interface XShadowVest {
+  vestingAmount: string
+  owner: string
+  status: string
+}
+
+export interface KuraPositionData {
+  xshadowPositions: XShadowPosition[]
+  xshadowVests: XShadowVest[]
 } 

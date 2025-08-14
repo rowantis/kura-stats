@@ -18,12 +18,17 @@ interface BaseSummaryProps {
   setTypeFilter: (value: string) => void
   poolTypeFilter: "V2" | "V3" | "All"
   setPoolTypeFilter: (value: "V2" | "V3" | "All") => void
-  startDate: string
-  setStartDate: (value: string) => void
-  endDate: string
-  setEndDate: (value: string) => void
+  startTimestamp: string
+  setStartTimestamp: (value: string) => void
+  endTimestamp: string
+  setEndTimestamp: (value: string) => void
   setPageSize: (value: number) => void
   onDownloadCSV: () => void
+  // Pagination props
+  hasMoreData?: boolean
+  loadedPages?: number
+  onLoadMore?: () => Promise<void>
+  onShowAll?: () => Promise<void>
 }
 
 export default function BaseSummary({
@@ -39,12 +44,16 @@ export default function BaseSummary({
   setTypeFilter,
   poolTypeFilter,
   setPoolTypeFilter,
-  startDate,
-  setStartDate,
-  endDate,
-  setEndDate,
+  startTimestamp,
+  setStartTimestamp,
+  endTimestamp,
+  setEndTimestamp,
   setPageSize,
-  onDownloadCSV
+  onDownloadCSV,
+  hasMoreData,
+  loadedPages,
+  onLoadMore,
+  onShowAll
 }: BaseSummaryProps) {
   const totalPages = Math.ceil(totalItems / pageSize)
 
@@ -59,10 +68,10 @@ export default function BaseSummary({
         setTypeFilter={setTypeFilter}
         poolTypeFilter={poolTypeFilter}
         setPoolTypeFilter={setPoolTypeFilter}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
+        startTimestamp={startTimestamp}
+        setStartTimestamp={setStartTimestamp}
+        endTimestamp={endTimestamp}
+        setEndTimestamp={setEndTimestamp}
         pageSize={pageSize}
         setPageSize={setPageSize}
         currentDataLength={totalItems}
@@ -74,15 +83,26 @@ export default function BaseSummary({
       {children}
 
       {/* 페이지네이션 */}
-      {totalPages > 1 && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
-        </div>
-      )}
+      {(() => {
+        const actualPages = loadedPages || totalPages
+        const shouldShowPagination = actualPages > 1 || hasMoreData
+
+        if (!shouldShowPagination) return null
+
+        return (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <Pagination
+              currentPage={currentPage}
+              loadedPages={actualPages}
+              hasMoreData={hasMoreData || false}
+              isLoadingMore={false}
+              onPageChange={onPageChange}
+              onLoadMore={onLoadMore || (() => Promise.resolve())}
+              onShowAll={onShowAll || (() => Promise.resolve())}
+            />
+          </div>
+        )
+      })()}
     </div>
   )
 } 

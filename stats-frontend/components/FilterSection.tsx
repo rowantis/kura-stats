@@ -1,4 +1,6 @@
 import { Download } from 'lucide-react'
+import { parseFormattedDate, parseFormattedDate2 } from '@/lib/utils'
+import { useState } from 'react'
 
 interface FilterSectionProps {
   activeTab: 'swap' | 'liquidity' | 'liquidityPosition' | 'kuraPosition'
@@ -8,10 +10,10 @@ interface FilterSectionProps {
   setTypeFilter: (value: string) => void
   poolTypeFilter: "V2" | "V3" | "All"
   setPoolTypeFilter: (value: "V2" | "V3" | "All") => void
-  startDate: string
-  setStartDate: (value: string) => void
-  endDate: string
-  setEndDate: (value: string) => void
+  startTimestamp: string
+  setStartTimestamp: (value: string) => void
+  endTimestamp: string
+  setEndTimestamp: (value: string) => void
   pageSize: number
   setPageSize: (value: number) => void
   currentDataLength: number
@@ -28,10 +30,10 @@ export default function FilterSection({
   setTypeFilter,
   poolTypeFilter,
   setPoolTypeFilter,
-  startDate,
-  setStartDate,
-  endDate,
-  setEndDate,
+  startTimestamp,
+  setStartTimestamp,
+  endTimestamp,
+  setEndTimestamp,
   pageSize,
   setPageSize,
   currentDataLength,
@@ -39,12 +41,16 @@ export default function FilterSection({
   filteredKuraPositionsLength,
   onDownloadCSV
 }: FilterSectionProps) {
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const handleReset = () => {
     setAddressFilter('')
     setTypeFilter('All')
     setPoolTypeFilter('All')
     setStartDate('')
     setEndDate('')
+    setStartTimestamp('')
+    setEndTimestamp('')
     setPageSize(20)
   }
 
@@ -126,29 +132,37 @@ export default function FilterSection({
         </div>
 
         <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-            시작일시
+          <label htmlFor="startTimestamp" className="block text-sm font-medium text-gray-700 mb-2">
+            시작일
           </label>
           <input
-            type="text"
+            type="date"
             id="startDate"
-            placeholder="MM. DD. HH:MM:SS"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => {
+              setStartDate(e.target.value)
+              setStartTimestamp(parseFormattedDate2(e.target.value).toString())
+              console.log("startDate", startDate)
+              console.log("startTimestamp", startTimestamp)
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           />
         </div>
 
         <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-            종료일시
+          <label htmlFor="endTimestamp" className="block text-sm font-medium text-gray-700 mb-2">
+            종료일
           </label>
           <input
-            type="text"
+            type="date"
             id="endDate"
-            placeholder="MM. DD. HH:MM:SS"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e) => {
+              setEndDate(e.target.value)
+              setEndTimestamp(parseFormattedDate2(e.target.value).toString())
+              console.log("endDate", endDate)
+              console.log("endTimestamp", endTimestamp)
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           />
         </div>

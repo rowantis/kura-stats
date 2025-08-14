@@ -17,7 +17,6 @@ export default function LiquidityPositionTable({ positions, currentPage, pageSiz
       totalItems={positions.length}
     >
       <TableHeader>
-        <TableHeaderCell>Created Time</TableHeaderCell>
         <TableHeaderCell>User</TableHeaderCell>
         <TableHeaderCell>Pool Type</TableHeaderCell>
         <TableHeaderCell>USD Value</TableHeaderCell>
@@ -27,9 +26,8 @@ export default function LiquidityPositionTable({ positions, currentPage, pageSiz
         <TableHeaderCell>Token1 Amount</TableHeaderCell>
       </TableHeader>
       <TableBody>
-        {positions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((position, index) => (
+        {positions.map((position, index) => (
           <TableRow key={index}>
-            <TableCell>{position.createdTime}</TableCell>
             <TableCell>
               <CopyButton
                 copyText={position.user}

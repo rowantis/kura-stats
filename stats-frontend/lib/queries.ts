@@ -157,4 +157,25 @@ export const KURA_POSITIONS_QUERY = gql`
       vesting
     }
   }
+`
+
+// 새로운 Kura Position 쿼리 (showAll 로직용)
+export const KURA_POSITIONS_ALL_QUERY = gql`
+  query GetKuraPositionsAll {
+    xshadowPositions {
+      stakedBalance
+      vestedBalance
+      x33Balance
+      balance
+      owner
+    }
+    xshadowVests {
+      vestingAmount
+      owner
+      status
+    }
+    xshadows {
+    x33Ratio
+  }
+  }
 ` 

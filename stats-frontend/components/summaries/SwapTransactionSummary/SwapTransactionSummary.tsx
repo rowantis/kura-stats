@@ -13,18 +13,26 @@ interface SwapTransactionSummaryProps {
 export default function SwapTransactionSummary({ onTabChange }: SwapTransactionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startTimestamp, setStartTimestamp] = useState('')
+  const [endTimestamp, setEndTimestamp] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  const swapTransactions = useSwapTransactions({
+  const {
+    transactions: swapTransactions,
+    loading,
+    error,
+    hasMoreData,
+    loadedPages,
+    loadMore,
+    showAll
+  } = useSwapTransactions({
     pageSize,
     currentPage,
     addressFilter,
     poolTypeFilter,
-    startDate,
-    endDate,
+    startTimestamp,
+    endTimestamp,
   })
 
 
@@ -95,12 +103,16 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       setTypeFilter={() => { }}
       poolTypeFilter={poolTypeFilter}
       setPoolTypeFilter={setPoolTypeFilter}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
+      startTimestamp={startTimestamp}
+      setStartTimestamp={setStartTimestamp}
+      endTimestamp={endTimestamp}
+      setEndTimestamp={setEndTimestamp}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
+      hasMoreData={hasMoreData}
+      loadedPages={loadedPages}
+      onLoadMore={loadMore}
+      onShowAll={showAll}
     >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

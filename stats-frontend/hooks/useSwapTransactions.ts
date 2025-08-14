@@ -1,17 +1,34 @@
-import { useQuery } from '@apollo/client'
-import { useMemo } from 'react'
-import { SWAP_TRANSACTIONS_QUERY } from '@/lib/queries'
+import { useQuery, useApolloClient } from '@apollo/client'
+import { useMemo, useState, useEffect } from 'react'
 import { transformTransactions } from '@/lib/transactions'
 import { SwapTransaction } from '@/types/graphql'
 import { parseFormattedDate } from '@/lib/utils'
+import { gql } from '@apollo/client'
+import {
+  IMPOSSIBLE_ID,
+  MIN_TIMESTAMP,
+  MAX_TIMESTAMP,
+  INITIAL_LOAD_SIZE,
+  SHOW_ALL_SIZE
+} from '@/lib/constants'
 
 interface UseSwapTransactionsProps {
   pageSize: number
   currentPage: number
   addressFilter?: string
   poolTypeFilter?: string
-  startDate?: string
-  endDate?: string
+  startTimestamp?: string
+  endTimestamp?: string
+}
+
+interface UseSwapTransactionsReturn {
+  transactions: SwapTransaction[]
+  loading: boolean
+  error: any
+  hasMoreData: boolean
+  loadedPages: number
+  loadMore: () => Promise<void>
+  showAll: () => Promise<void>
 }
 
 export function useSwapTransactions({
@@ -19,52 +36,228 @@ export function useSwapTransactions({
   currentPage,
   addressFilter,
   poolTypeFilter,
-  startDate,
-  endDate,
-}: UseSwapTransactionsProps) {
-  const skip = (currentPage - 1) * pageSize
+  startTimestamp,
+  endTimestamp,
+}: UseSwapTransactionsProps): UseSwapTransactionsReturn {
+  const client = useApolloClient()
 
-  const { loading, error, data } = useQuery(SWAP_TRANSACTIONS_QUERY, {
-    variables: { first: pageSize, skip },
+  // 상태 관리
+  const [allTransactions, setAllTransactions] = useState<SwapTransaction[]>([])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMoreData, setHasMoreData] = useState(true)
+
+  // 필터링된 쿼리 생성 함수
+  const createFilteredQuery = () => {
+    let clConditions = []
+    let legacyConditions = []
+    if (addressFilter) {
+      legacyConditions.push(`from_contains: "${addressFilter}"`)
+      clConditions.push(`origin_contains: "${addressFilter}"`)
+    }
+
+    if (startTimestamp || endTimestamp) {
+      const start = startTimestamp ? startTimestamp : MIN_TIMESTAMP
+      const end = endTimestamp ? endTimestamp : MAX_TIMESTAMP
+      clConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
+      legacyConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
+    }
+
+    if (poolTypeFilter === 'V2') {
+      clConditions.push(`id: "${IMPOSSIBLE_ID}"`)
+    }
+    if (poolTypeFilter === 'V3') {
+      legacyConditions.push(`id: "${IMPOSSIBLE_ID}"`)
+    }
+    const clWhereClause = clConditions.length > 0 ? `where: {${clConditions.join(', ')}}` : ""
+    const legacyWhereClause = legacyConditions.length > 0 ? `where: {${legacyConditions.join(', ')}}` : ""
+
+    const query = gql`
+      query GetFilteredSwapTransactions($first: Int!, $skip: Int!) {
+        clSwaps(
+          first: $first, 
+          skip: $skip,
+          orderBy: transaction__timestamp,
+          ${clWhereClause}
+        ) {
+          amount0
+          amount1
+          amountUSD
+          origin
+          pool {
+            feeTier
+          }
+          token0 {
+            symbol
+            id
+          }
+          token1 {
+            symbol
+            id
+          }
+          transaction {
+            id
+            timestamp
+          }
+        }
+        legacySwaps(
+          first: $first, 
+          skip: $skip,
+          orderBy: transaction__timestamp,
+          ${legacyWhereClause}
+        ) {
+          amount0In
+          amount0Out
+          amount1In
+          amount1Out
+          amountUSD
+          origin: from
+          pool {
+            isStable
+            token0 {
+              symbol
+              id
+            }
+            token1 {
+              symbol
+              id
+            }
+          }
+          transaction {
+            id
+            timestamp
+          }
+        }
+      }
+    `
+
+    return query
+  }
+
+  // 동적으로 생성된 쿼리
+  const dynamicQuery = createFilteredQuery()
+
+  // 초기 쿼리
+  const { loading, error, data } = useQuery(dynamicQuery, {
+    variables: { first: INITIAL_LOAD_SIZE, skip: 0 }, // 초기에는 100개 로드
     fetchPolicy: 'cache-and-network',
   })
 
 
-  const transactions = useMemo(() => {
-    if (!data) return []
+  // 필터가 변경될 때마다 데이터 초기화
+  useEffect(() => {
+    setAllTransactions([])
+    setHasMoreData(true)
+  }, [addressFilter, poolTypeFilter, startTimestamp, endTimestamp])
 
-    const { swaps } = transformTransactions(data)
-    let filteredSwaps = [...swaps]
-
-    // 주소 필터링
-    if (addressFilter) {
-      filteredSwaps = filteredSwaps.filter(tx =>
-        tx.origin.toLowerCase().includes(addressFilter.toLowerCase())
-      )
+  // 초기 데이터 로딩
+  useEffect(() => {
+    if (data && allTransactions.length === 0) {
+      const { swaps } = transformTransactions(data)
+      setAllTransactions(swaps)
+      // 100개를 요청했는데 100개가 반환되면 더 있을 가능성이 높음
+      setHasMoreData(swaps.length >= INITIAL_LOAD_SIZE)
     }
+  }, [data])
 
-    // 풀타입 필터링
-    if (poolTypeFilter && poolTypeFilter !== 'All') {
-      filteredSwaps = filteredSwaps.filter(tx =>
-        tx.poolType === poolTypeFilter ||
-        (poolTypeFilter === 'V2' && tx.poolType.startsWith('V2:')) ||
-        (poolTypeFilter === 'V3' && tx.poolType.startsWith('V3:'))
-      )
-    }
+  // Load More 함수
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMoreData) return
 
-    if (startDate || endDate) {
-      filteredSwaps = filteredSwaps.filter(tx => {
-        const start = startDate ? new Date(parseFormattedDate(startDate) * 1000) : null
-        const end = endDate ? new Date(parseFormattedDate(endDate) * 1000) : null
-
-        if (start && Number(tx.timestamp) < Number(start)) return false
-        if (end && Number(tx.timestamp) > Number(end)) return false
-        return true
+    setIsLoadingMore(true)
+    try {
+      const { data: newData } = await client.query({
+        query: dynamicQuery,
+        variables: {
+          first: INITIAL_LOAD_SIZE,
+          skip: allTransactions.length
+        },
+        fetchPolicy: 'network-only'
       })
+
+      if (newData) {
+        const { swaps } = transformTransactions(newData)
+
+        if (swaps.length === 0) {
+          setHasMoreData(false)
+        } else {
+          setAllTransactions(prev => [...prev, ...swaps])
+          // 100개를 요청했는데 100개가 반환되면 더 있을 가능성이 높음
+          setHasMoreData(swaps.length >= INITIAL_LOAD_SIZE)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading more data:', error)
+    } finally {
+      setIsLoadingMore(false)
     }
+  }
 
-    return filteredSwaps
-  }, [data, addressFilter, poolTypeFilter, startDate, endDate])
+  // Show All 함수
+  const showAll = async () => {
+    if (isLoadingMore) return
 
-  return transactions
+    setIsLoadingMore(true)
+    try {
+      let allSwaps: SwapTransaction[] = []
+      let skip = 0
+      let hasMore = true
+
+      // 모든 데이터를 불러올 때까지 반복 쿼리
+      while (hasMore) {
+        const { data: newData } = await client.query({
+          query: dynamicQuery,
+          variables: {
+            first: SHOW_ALL_SIZE,
+            skip: skip
+          },
+          fetchPolicy: 'network-only'
+        })
+
+        if (newData) {
+          const { swaps } = transformTransactions(newData)
+
+          if (swaps.length === 0) {
+            hasMore = false
+          } else {
+            allSwaps = [...allSwaps, ...swaps]
+            skip += swaps.length
+
+            // SHOW_ALL_SIZE보다 적은 데이터가 반환되면 더 이상 데이터가 없음
+            if (swaps.length < SHOW_ALL_SIZE) {
+              hasMore = false
+            }
+          }
+        } else {
+          hasMore = false
+        }
+      }
+
+      setAllTransactions(allSwaps)
+      setHasMoreData(false)
+    } catch (error) {
+      console.error('Error loading all data:', error)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+
+  // 현재 페이지에 해당하는 데이터만 반환
+  const transactions = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return allTransactions.slice(startIndex, endIndex)
+  }, [allTransactions, currentPage, pageSize])
+
+  // 실제 데이터가 있는 페이지 수만 계산
+  const loadedPages = Math.max(1, Math.ceil(allTransactions.length / pageSize))
+
+  return {
+    transactions,
+    loading: loading || isLoadingMore,
+    error,
+    hasMoreData,
+    loadedPages,
+    loadMore,
+    showAll
+  }
 } 
