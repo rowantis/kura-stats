@@ -122,7 +122,6 @@ export interface LiquidityTransaction {
 export type DexTransaction = SwapTransaction | LiquidityTransaction
 
 export interface LiquidityPosition {
-  createdTime: string
   user: string
   poolType: string
   usdValue: string
