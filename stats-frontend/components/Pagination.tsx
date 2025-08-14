@@ -1,20 +1,28 @@
 interface PaginationProps {
   currentPage: number
-  totalPages: number
+  loadedPages: number
+  hasMoreData: boolean
+  isLoadingMore: boolean
   onPageChange: (page: number) => void
+  onLoadMore: () => void
+  onShowAll: () => void
 }
 
 export default function Pagination({
   currentPage,
-  totalPages,
-  onPageChange
+  loadedPages,
+  hasMoreData,
+  isLoadingMore,
+  onPageChange,
+  onLoadMore,
+  onShowAll
 }: PaginationProps) {
   const getPageNumbers = () => {
     const pages = []
     const maxVisiblePages = 5
 
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
+    if (loadedPages <= maxVisiblePages) {
+      for (let i = 1; i <= loadedPages; i++) {
         pages.push(i)
       }
     } else {
@@ -23,11 +31,11 @@ export default function Pagination({
           pages.push(i)
         }
         pages.push('...')
-        pages.push(totalPages)
-      } else if (currentPage >= totalPages - 2) {
+        pages.push(loadedPages)
+      } else if (currentPage >= loadedPages - 2) {
         pages.push(1)
         pages.push('...')
-        for (let i = totalPages - 3; i <= totalPages; i++) {
+        for (let i = loadedPages - 3; i <= loadedPages; i++) {
           pages.push(i)
         }
       } else {
@@ -37,7 +45,7 @@ export default function Pagination({
           pages.push(i)
         }
         pages.push('...')
-        pages.push(totalPages)
+        pages.push(loadedPages)
       }
     }
 
@@ -74,16 +82,38 @@ export default function Pagination({
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === loadedPages}
             className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             다음
           </button>
+
+          {/* Load More 버튼 */}
+          {hasMoreData && (
+            <button
+              onClick={onLoadMore}
+              disabled={isLoadingMore}
+              className="ml-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingMore ? '로딩 중...' : '더 보기'}
+            </button>
+          )}
+
+          {/* Show All 버튼 */}
+          {hasMoreData && (
+            <button
+              onClick={onShowAll}
+              className="ml-2 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-md hover:bg-green-700"
+            >
+              전체 보기
+            </button>
+          )}
         </div>
 
         <div className="text-sm text-gray-700">
           <span className="font-medium">페이지 {currentPage}</span>
-          <span className="text-gray-500"> / {totalPages}</span>
+          <span className="text-gray-500"> / {loadedPages}</span>
+          {hasMoreData && <span className="text-blue-600 ml-2">(더 있음)</span>}
         </div>
       </div>
     </div>

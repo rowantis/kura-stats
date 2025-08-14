@@ -24,6 +24,11 @@ interface BaseSummaryProps {
   setEndDate: (value: string) => void
   setPageSize: (value: number) => void
   onDownloadCSV: () => void
+  // Pagination props
+  hasMoreData?: boolean
+  loadedPages?: number
+  onLoadMore?: () => Promise<void>
+  onShowAll?: () => Promise<void>
 }
 
 export default function BaseSummary({
@@ -44,7 +49,11 @@ export default function BaseSummary({
   endDate,
   setEndDate,
   setPageSize,
-  onDownloadCSV
+  onDownloadCSV,
+  hasMoreData,
+  loadedPages,
+  onLoadMore,
+  onShowAll
 }: BaseSummaryProps) {
   const totalPages = Math.ceil(totalItems / pageSize)
 
@@ -74,15 +83,26 @@ export default function BaseSummary({
       {children}
 
       {/* 페이지네이션 */}
-      {totalPages > 1 && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
-        </div>
-      )}
+      {(() => {
+        const actualPages = loadedPages || totalPages
+        const shouldShowPagination = actualPages > 1 || hasMoreData
+
+        if (!shouldShowPagination) return null
+
+        return (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <Pagination
+              currentPage={currentPage}
+              loadedPages={actualPages}
+              hasMoreData={hasMoreData || false}
+              isLoadingMore={false}
+              onPageChange={onPageChange}
+              onLoadMore={onLoadMore || (() => Promise.resolve())}
+              onShowAll={onShowAll || (() => Promise.resolve())}
+            />
+          </div>
+        )
+      })()}
     </div>
   )
 } 

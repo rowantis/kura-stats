@@ -18,7 +18,15 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  const swapTransactions = useSwapTransactions({
+  const {
+    transactions: swapTransactions,
+    loading,
+    error,
+    hasMoreData,
+    loadedPages,
+    loadMore,
+    showAll
+  } = useSwapTransactions({
     pageSize,
     currentPage,
     addressFilter,
@@ -101,6 +109,10 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       setEndDate={setEndDate}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
+      hasMoreData={hasMoreData}
+      loadedPages={loadedPages}
+      onLoadMore={loadMore}
+      onShowAll={showAll}
     >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
