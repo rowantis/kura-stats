@@ -1,7 +1,7 @@
 // GraphQL 쿼리에서 사용하는 상수들
 
 // 불가능한 ID (필터링용)
-export const IMPOSSIBLE_ID = "__IMPOSSIBLE_ID__"
+export const IMPOSSIBLE_ID = "0xdeafbeef00000000000000000000000000000000000000000000000000000000"
 
 // 타임스탬프 범위
 export const MIN_TIMESTAMP = "0"

@@ -49,47 +49,36 @@ export function useSwapTransactions({
 
   // 필터링된 쿼리 생성 함수
   const createFilteredQuery = () => {
-    const whereConditions = []
-
-    // 주소 필터
+    let clConditions = []
+    let legacyConditions = []
     if (addressFilter) {
-      whereConditions.push(`origin_contains: "${addressFilter}"`)
+      legacyConditions.push(`from_contains: "${addressFilter}"`)
+      clConditions.push(`origin_contains: "${addressFilter}"`)
     }
 
-    // 날짜 필터
     if (startDate || endDate) {
       const start = startDate ? parseFormattedDate(startDate) : MIN_TIMESTAMP
       const end = endDate ? parseFormattedDate(endDate) : MAX_TIMESTAMP
-      whereConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
+      clConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
+      legacyConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
     }
 
-    // 풀타입 필터
-    let poolTypeWhere = ""
-    if (poolTypeFilter && poolTypeFilter !== 'All') {
-      if (poolTypeFilter === 'V2') {
-        // V2만 보기 위해 V3에 불가능한 ID 필터 적용
-        poolTypeWhere = `, clSwaps: {id: "${IMPOSSIBLE_ID}"}`
-      } else if (poolTypeFilter === 'V3') {
-        // V3만 보기 위해 V2에 불가능한 ID 필터 적용
-        poolTypeWhere = `, legacySwaps: {id: "${IMPOSSIBLE_ID}"}`
-      } else if (poolTypeFilter.startsWith('V2:')) {
-        // 특정 V2 타입만 보기
-        poolTypeWhere = `, clSwaps: {id: "${IMPOSSIBLE_ID}"}`
-      } else if (poolTypeFilter.startsWith('V3:')) {
-        // 특정 V3 타입만 보기
-        poolTypeWhere = `, legacySwaps: {id: "${IMPOSSIBLE_ID}"}`
-      }
+    if (poolTypeFilter === 'V2') {
+      clConditions.push(`id: "${IMPOSSIBLE_ID}"`)
     }
+    if (poolTypeFilter === 'V3') {
+      legacyConditions.push(`id: "${IMPOSSIBLE_ID}"`)
+    }
+    const clWhereClause = clConditions.length > 0 ? `where: {${clConditions.join(', ')}}` : ""
+    const legacyWhereClause = legacyConditions.length > 0 ? `where: {${legacyConditions.join(', ')}}` : ""
 
-    const whereClause = whereConditions.length > 0 ? `where: {${whereConditions.join(', ')}}` : ""
-
-    return gql`
+    const query = gql`
       query GetFilteredSwapTransactions($first: Int!, $skip: Int!) {
         clSwaps(
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
-          ${whereClause}
+          ${clWhereClause}
         ) {
           amount0
           amount1
@@ -115,7 +104,7 @@ export function useSwapTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
-          ${whereClause}
+          ${legacyWhereClause}
         ) {
           amount0In
           amount0Out
@@ -141,6 +130,8 @@ export function useSwapTransactions({
         }
       }
     `
+
+    return query
   }
 
   // 동적으로 생성된 쿼리
@@ -151,6 +142,7 @@ export function useSwapTransactions({
     variables: { first: INITIAL_LOAD_SIZE, skip: 0 }, // 초기에는 100개 로드
     fetchPolicy: 'cache-and-network',
   })
+
 
   // 필터가 변경될 때마다 데이터 초기화
   useEffect(() => {
