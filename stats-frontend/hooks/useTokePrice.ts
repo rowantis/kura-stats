@@ -10,7 +10,10 @@ interface TokenPrice {
 }
 
 export const useTokenPrices = () => {
-  const [tokenPrices, setTokenPrices] = useState<TokenPrice>({})
+  const [tokenPrices, setTokenPrices] = useState<TokenPrice>({
+    data: {},
+    timestamp: 0,
+  })
   useEffect(() => {
     const fetchTokenPrices = async () => {
       const response = await fetch(TOKEN_PRICE_URL)
