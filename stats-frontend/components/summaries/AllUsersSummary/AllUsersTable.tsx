@@ -15,9 +15,13 @@ import BaseSortableTable, {
 import CopyButton from '@/components/CopyButton'
 import { formatAddress } from '@/lib/utils'
 import { formatEther } from 'viem'
+import { KuraPosition, LiquidityTransaction, SwapTransaction } from '@/types/graphql'
 
 interface AllUsersTableProps {
   loading: boolean
+  swapTransactions: SwapTransaction[]
+  liquidityTransactions: LiquidityTransaction[]
+  kuraPositions: KuraPosition[]
 }
 
 interface UserData {
@@ -32,19 +36,8 @@ interface UserData {
   vesting: string
 }
 
-export default function AllUsersTable({ loading }: AllUsersTableProps) {
+export default function AllUsersTable({ loading, swapTransactions, liquidityTransactions, kuraPositions }: AllUsersTableProps) {
   // 훅들에서 데이터 가져오기
-  const { transactions: swapTransactions } = useSwapTransactions({
-    pageSize: 1000,
-    currentPage: 1
-  })
-
-  const { transactions: liquidityTransactions } = useLiquidityTransactions({
-    pageSize: 1000,
-    currentPage: 1
-  })
-
-  const { positions: kuraPositions } = useKuraPositions()
 
   // CSV 다운로드 함수
   const downloadCSV = () => {

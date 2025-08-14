@@ -22,6 +22,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
 
   const {
     transactions: liquidityTransactions,
+    allTransactions,
     loading,
     error,
     hasMoreData,
@@ -46,7 +47,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
   }
 
   const downloadCSV = () => {
-    if (liquidityTransactions.length === 0) return
+    if (allTransactions.length === 0) return
 
     const headers = [
       'Time(UTC)',
@@ -61,7 +62,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       'Transaction ID'
     ]
 
-    const csvData = liquidityTransactions.map(tx => [
+    const csvData = allTransactions.map(tx => [
       formatDate(tx.timestamp),
       tx.origin,
       tx.type,

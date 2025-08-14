@@ -23,6 +23,7 @@ interface UseLiquidityTransactionsProps {
 
 interface UseLiquidityTransactionsReturn {
   transactions: LiquidityTransaction[]
+  allTransactions: LiquidityTransaction[]
   loading: boolean
   error: any
   hasMoreData: boolean
@@ -337,6 +338,7 @@ export function useLiquidityTransactions({
 
   return {
     transactions,
+    allTransactions,
     loading: loading || isLoadingMore,
     error,
     hasMoreData,

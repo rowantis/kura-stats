@@ -27,12 +27,12 @@ export default function AllUsersSummary({ onTabChange }: AllUsersSummaryProps) {
   const [showAllClicked, setShowAllClicked] = useState(false)
 
   // 훅들 초기화 (showAll을 위해 필요한 파라미터들)
-  const { showAll: showAllSwaps, loading: swapsLoading } = useSwapTransactions({
+  const { showAll: showAllSwaps, loading: swapsLoading, allTransactions: allSwapTransactions } = useSwapTransactions({
     pageSize: 1000,
     currentPage: 1,
   })
 
-  const { showAll: showAllLiquidity, loading: liquidityLoading } = useLiquidityTransactions({
+  const { showAll: showAllLiquidity, loading: liquidityLoading, allTransactions: allLiquidityTransactions } = useLiquidityTransactions({
     pageSize: 1000,
     currentPage: 1
   })
@@ -80,6 +80,9 @@ export default function AllUsersSummary({ onTabChange }: AllUsersSummaryProps) {
         {showAllClicked && (
           <AllUsersTable
             loading={isLoading || swapsLoading || liquidityLoading || kuraLoading}
+            swapTransactions={allSwapTransactions}
+            liquidityTransactions={allLiquidityTransactions}
+            kuraPositions={kuraPositions}
           />
         )}
       </div>
