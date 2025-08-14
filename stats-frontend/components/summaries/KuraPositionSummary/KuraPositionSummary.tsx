@@ -1,40 +1,27 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { KuraPosition } from '@/types/graphql'
+import { useQuery } from '@apollo/client'
+import { formatEther } from 'viem'
+import { KuraPosition, XShadowPosition, XShadowVest } from '@/types/graphql'
+import { KURA_POSITIONS_ALL_QUERY } from '@/lib/queries'
 import KuraPositionTable from '@/components/summaries/KuraPositionSummary/KuraPositionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
 
-// 목업 데이터
-const mockKuraPositions: KuraPosition[] = [
-  {
-    user: '0x1234567890abcdef1234567890abcdef12345678',
-    usdValue: '5000.00',
-    kura: '10000.0',
-    xkura: '9500.0',
-    stXkura: '9000.0',
-    k33: '500.0',
-    vesting: '2024-12-31'
-  },
-  {
-    user: '0xabcdef1234567890abcdef1234567890abcdef12',
-    usdValue: '3200.75',
-    kura: '6400.0',
-    xkura: '6080.0',
-    stXkura: '5760.0',
-    k33: '320.0',
-    vesting: '2024-10-15'
-  },
-  {
-    user: '0x9876543210fedcba9876543210fedcba98765432',
-    usdValue: '1800.50',
-    kura: '3600.0',
-    xkura: '3420.0',
-    stXkura: '3240.0',
-    k33: '180.0',
-    vesting: '2025-03-20'
-  }
-]
+// 숫자 포맷팅 함수: 유효숫자까지만 표시, 최대 6자리 소숫점
+const formatNumber = (value: string): string => {
+  const num = parseFloat(value)
+  if (num === 0) return '0'
+
+  // 소숫점 이하 자릿수 계산
+  const decimalPlaces = value.includes('.') ? value.split('.')[1].length : 0
+
+  // 유효숫자까지만 표시하되 최대 6자리
+  const maxDecimalPlaces = Math.min(decimalPlaces, 6)
+
+  // 뒤의 불필요한 0 제거
+  return num.toFixed(maxDecimalPlaces).replace(/\.?0+$/, '')
+}
 
 interface KuraPositionSummaryProps {
   onTabChange: (tab: string) => void
@@ -45,11 +32,46 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
+  // GraphQL 쿼리 실행
+  const { data, loading, error } = useQuery(KURA_POSITIONS_ALL_QUERY)
+
   // KuraPosition 필터링
   const [filteredKuraPositions, setFilteredKuraPositions] = useState<KuraPosition[]>([])
 
   useEffect(() => {
-    let filteredKuraPos = [...mockKuraPositions]
+    if (!data) return
+
+    // 데이터 변환 및 처리
+    const { xshadowPositions, xshadowVests, xshadows } = data
+
+    // 유저별 vestingAmount 계산 (status가 "0"인 것만)
+    const userVestingMap = new Map<string, string>()
+    xshadowVests.forEach((vest: XShadowVest) => {
+      if (vest.status === "0") {
+        const currentAmount = userVestingMap.get(vest.owner) || '0'
+        const newAmount = (parseFloat(currentAmount) + parseFloat(vest.vestingAmount)).toString()
+        userVestingMap.set(vest.owner, newAmount)
+      }
+    })
+
+
+    // KuraPosition 데이터 생성
+    const kuraPositions: KuraPosition[] = xshadowPositions.map((pos: XShadowPosition) => {
+      const vestingAmount = userVestingMap.get(pos.owner) || '0'
+
+      return {
+        user: pos.owner,
+        usdValue: '0', // 우선 0으로 표시
+        kura: formatNumber("999999"),
+        xkura: formatNumber(formatEther(BigInt(pos.balance || '0'))),
+        stXkura: formatNumber(formatEther(BigInt(pos.stakedBalance || '0'))),
+        k33: formatNumber(formatEther(BigInt(pos.x33Balance || '0'))),
+        vesting: formatNumber(formatEther(BigInt(vestingAmount)))
+      }
+    })
+
+    let filteredKuraPos = [...kuraPositions]
+    filteredKuraPos = filteredKuraPos.filter(pos => pos.user.toLowerCase() !== '0x0000000000000000000000000000000000000000')
 
     // 주소 필터링
     if (addressFilter) {
@@ -59,9 +81,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
     }
 
     setFilteredKuraPositions(filteredKuraPos)
-  }, [addressFilter])
-
-
+  }, [data, addressFilter])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -108,6 +128,22 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">데이터를 불러오는 중...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg text-red-600">데이터를 불러오는 중 오류가 발생했습니다.</div>
+      </div>
+    )
   }
 
   return (

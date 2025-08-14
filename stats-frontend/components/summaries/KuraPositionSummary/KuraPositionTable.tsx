@@ -35,15 +35,11 @@ export default function KuraPositionTable({ positions, currentPage, pageSize }: 
               />
             </TableCell>
             <TableCell>${parseFloat(position.usdValue).toLocaleString()}</TableCell>
-            <TableCell>{parseFloat(position.kura).toLocaleString()}</TableCell>
-            <TableCell>{parseFloat(position.xkura).toLocaleString()}</TableCell>
-            <TableCell>{parseFloat(position.stXkura).toLocaleString()}</TableCell>
-            <TableCell>{parseFloat(position.k33).toLocaleString()}</TableCell>
-            <TableCell>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {position.vesting}
-              </span>
-            </TableCell>
+            <TableCell>{position.kura}</TableCell>
+            <TableCell>{position.xkura}</TableCell>
+            <TableCell>{position.stXkura}</TableCell>
+            <TableCell>{position.k33}</TableCell>
+            <TableCell>{position.vesting}</TableCell>
           </TableRow>
         ))}
       </TableBody>

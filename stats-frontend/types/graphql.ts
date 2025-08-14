@@ -139,4 +139,24 @@ export interface KuraPosition {
   stXkura: string
   k33: string
   vesting: string
+}
+
+// 새로운 GraphQL 쿼리 타입들
+export interface XShadowPosition {
+  stakedBalance: string
+  vestedBalance: string
+  x33Balance: string
+  balance: string
+  owner: string
+}
+
+export interface XShadowVest {
+  vestingAmount: string
+  owner: string
+  status: string
+}
+
+export interface KuraPositionData {
+  xshadowPositions: XShadowPosition[]
+  xshadowVests: XShadowVest[]
 } 
