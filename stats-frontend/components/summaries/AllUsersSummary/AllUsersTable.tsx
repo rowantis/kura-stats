@@ -74,6 +74,7 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
 
     const headers = [
       'User',
+      "Type",
       'Tx Count',
       'Trade Volume ($)',
       'Liquidity Net ($)',
@@ -88,6 +89,7 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
       headers.join(','),
       ...sortedData.map(row => [
         row.user,
+        isTeamAccount(row.user) ? 'TEAM' : isTeamFarmingAccount(row.user) ? 'FARM' : 'USER',
         row.txCount,
         row.tradeVolume.toFixed(2),
         row.liquidityNet.toFixed(2),
