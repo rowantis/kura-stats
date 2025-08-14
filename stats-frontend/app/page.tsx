@@ -7,11 +7,12 @@ import SwapTransactionSummary from '@/components/summaries/SwapTransactionSummar
 import LiquidityTransactionSummary from '@/components/summaries/LiquidityTransactionSummary/LiquidityTransactionSummary'
 import LiquidityPositionSummary from '@/components/summaries/LiquidityPositionSummary/LiquidityPositionSummary'
 import KuraPositionSummary from '@/components/summaries/KuraPositionSummary/KuraPositionSummary'
+import AllUsersSummary from '@/components/summaries/AllUsersSummary'
 
 
 
 function DashboardContent() {
-  const [activeTab, setActiveTab] = useState<'swap' | 'liquidity' | 'liquidityPosition' | 'kuraPosition'>('swap')
+  const [activeTab, setActiveTab] = useState<'swap' | 'liquidity' | 'liquidityPosition' | 'kuraPosition' | 'allUsers'>('swap')
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as any)
@@ -65,6 +66,15 @@ function DashboardContent() {
               >
                 Kura Positions
               </button>
+              <button
+                onClick={() => handleTabChange('allUsers')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'allUsers'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                All Users
+              </button>
             </nav>
           </div>
         </div>
@@ -81,6 +91,9 @@ function DashboardContent() {
         )}
         {activeTab === 'kuraPosition' && (
           <KuraPositionSummary onTabChange={handleTabChange} />
+        )}
+        {activeTab === 'allUsers' && (
+          <AllUsersSummary onTabChange={handleTabChange} />
         )}
       </div>
     </div>

@@ -1,0 +1,228 @@
+'use client'
+
+import { useMemo } from 'react'
+import { useSwapTransactions } from '@/hooks/useSwapTransactions'
+import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
+import { useKuraPositions } from '@/hooks/useKuraPositions'
+import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/BaseTable'
+import CopyButton from '@/components/CopyButton'
+import { formatAddress } from '@/lib/utils'
+import { formatEther } from 'viem'
+
+interface AllUsersTableProps {
+  loading: boolean
+}
+
+interface UserData {
+  user: string
+  txCount: number
+  tradeVolume: number
+  liquidityNet: number
+  kura: string
+  xkura: string
+  stXkura: string
+  k33: string
+  vesting: string
+}
+
+export default function AllUsersTable({ loading }: AllUsersTableProps) {
+  // 훅들에서 데이터 가져오기
+  const { transactions: swapTransactions } = useSwapTransactions({
+    pageSize: 1000,
+    currentPage: 1
+  })
+
+  const { transactions: liquidityTransactions } = useLiquidityTransactions({
+    pageSize: 1000,
+    currentPage: 1
+  })
+
+  const { positions: kuraPositions } = useKuraPositions()
+
+  // 사용자별 데이터 집계
+  const aggregatedUserData = useMemo(() => {
+    const userMap = new Map<string, UserData>()
+
+    // Swap 거래 데이터 집계
+    swapTransactions.forEach(tx => {
+      const user = tx.origin
+      if (!userMap.has(user)) {
+        userMap.set(user, {
+          user,
+          txCount: 0,
+          tradeVolume: 0,
+          liquidityNet: 0,
+          kura: '0',
+          xkura: '0',
+          stXkura: '0',
+          k33: '0',
+          vesting: '0'
+        })
+      }
+
+      const userData = userMap.get(user)!
+      userData.txCount += 1
+      userData.tradeVolume += parseFloat(tx.amountUSD) || 0
+    })
+
+    // Liquidity 거래 데이터 집계
+    liquidityTransactions.forEach(tx => {
+      const user = tx.origin
+      if (!userMap.has(user)) {
+        userMap.set(user, {
+          user,
+          txCount: 0,
+          tradeVolume: 0,
+          liquidityNet: 0,
+          kura: '0',
+          xkura: '0',
+          stXkura: '0',
+          k33: '0',
+          vesting: '0'
+        })
+      }
+
+      const userData = userMap.get(user)!
+      userData.txCount += 1
+
+      if (tx.type === 'Mint') {
+        userData.liquidityNet += parseFloat(tx.amountUSD) || 0
+      } else if (tx.type === 'Burn') {
+        userData.liquidityNet -= parseFloat(tx.amountUSD) || 0
+      }
+    })
+
+    // Kura 포지션 데이터 추가
+    kuraPositions.forEach(pos => {
+      if (userMap.has(pos.user)) {
+        const userData = userMap.get(pos.user)!
+        userData.kura = pos.kura
+        userData.xkura = pos.xkura
+        userData.stXkura = pos.stXkura
+        userData.k33 = pos.k33
+        userData.vesting = pos.vesting
+      } else {
+        userMap.set(pos.user, {
+          user: pos.user,
+          txCount: 0,
+          tradeVolume: 0,
+          liquidityNet: 0,
+          kura: pos.kura,
+          xkura: pos.xkura,
+          stXkura: pos.stXkura,
+          k33: pos.k33,
+          vesting: pos.vesting
+        })
+      }
+    })
+
+    return Array.from(userMap.values()).sort((a, b) => b.tradeVolume - a.tradeVolume)
+  }, [swapTransactions, liquidityTransactions, kuraPositions])
+
+  const columns = [
+    {
+      header: 'User',
+      accessor: 'user' as keyof UserData,
+      cell: (value: any) => (
+        <div className="flex items-center space-x-2">
+          <CopyButton
+            copyText={value}
+            showText={formatAddress(value)}
+            label="유저"
+          />
+        </div>
+      )
+    },
+    {
+      header: 'Tx Count',
+      accessor: 'txCount' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">{value.toLocaleString()}</span>
+      )
+    },
+    {
+      header: 'Trade Volume',
+      accessor: 'tradeVolume' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      )
+    },
+    {
+      header: 'Liquidity Net',
+      accessor: 'liquidityNet' as keyof UserData,
+      cell: (value: any) => (
+        <span className={`text-sm font-medium ${value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+      )
+    },
+    {
+      header: 'Kura',
+      accessor: 'kura' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">{formatEther(value)}</span>
+      )
+    },
+    {
+      header: 'xKura',
+      accessor: 'xkura' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">{formatEther(value)}</span>
+      )
+    },
+    {
+      header: 'st xKura',
+      accessor: 'stXkura' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">{formatEther(value)}</span>
+      )
+    },
+    {
+      header: 'K33',
+      accessor: 'k33' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">{formatEther(value)}</span>
+      )
+    },
+    {
+      header: 'Vestings',
+      accessor: 'vesting' as keyof UserData,
+      cell: (value: any) => (
+        <span className="text-sm font-medium">{formatEther(value)}</span>
+      )
+    }
+  ]
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <BaseTable showPagination={false}>
+        <TableHeader>
+          {columns.map((column, index) => (
+            <TableHeaderCell key={index}>
+              {column.header}
+            </TableHeaderCell>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {aggregatedUserData.map((row, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {columns.map((column, colIndex) => (
+                <TableCell key={colIndex}>
+                  {column.cell(row[column.accessor as keyof UserData])}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </BaseTable>
+    </div>
+  )
+} 

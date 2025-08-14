@@ -2,12 +2,13 @@ import React from 'react'
 
 interface BaseTableProps {
   children: React.ReactNode
-  currentPage: number
-  pageSize: number
-  totalItems: number
+  currentPage?: number
+  pageSize?: number
+  totalItems?: number
+  showPagination?: boolean
 }
 
-export default function BaseTable({ children, currentPage, pageSize, totalItems }: BaseTableProps) {
+export default function BaseTable({ children, currentPage = 1, pageSize = 10, totalItems = 0, showPagination = true }: BaseTableProps) {
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = startIndex + pageSize
   const totalPages = Math.ceil(totalItems / pageSize)
@@ -17,7 +18,7 @@ export default function BaseTable({ children, currentPage, pageSize, totalItems 
       <table className="min-w-full divide-y divide-gray-200">
         {children}
       </table>
-      {totalPages > 1 && (
+      {showPagination && totalPages > 1 && (
         <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
           <div className="text-sm text-gray-700">
             {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
