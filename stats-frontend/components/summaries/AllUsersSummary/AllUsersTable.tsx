@@ -87,7 +87,7 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
 
     const csvContent = [
       headers.join(','),
-      ...sortedData.map(row => [
+      ...sortedData.filter(row => (row.user && row.user !== "0x0000000000000000000000000000000000000000")).map(row => [
         row.user,
         isTeamAccount(row.user) ? 'TEAM' : isTeamFarmingAccount(row.user) ? 'FARM' : 'USER',
         row.txCount,
