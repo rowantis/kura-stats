@@ -275,20 +275,42 @@ export function useLiquidityTransactions({
 
     setIsLoadingMore(true)
     try {
-      const { data: allData } = await client.query({
-        query: dynamicQuery,
-        variables: {
-          first: SHOW_ALL_SIZE,
-          skip: 0
-        },
-        fetchPolicy: 'network-only'
-      })
+      let allLiquidity: LiquidityTransaction[] = []
+      let skip = 0
+      let hasMore = true
 
-      if (allData) {
-        const { liquidity } = transformTransactions(allData)
-        setAllTransactions(liquidity)
-        setHasMoreData(false)
+      // 모든 데이터를 불러올 때까지 반복 쿼리
+      while (hasMore) {
+        const { data: newData } = await client.query({
+          query: dynamicQuery,
+          variables: {
+            first: SHOW_ALL_SIZE,
+            skip: skip
+          },
+          fetchPolicy: 'network-only'
+        })
+
+        if (newData) {
+          const { liquidity } = transformTransactions(newData)
+
+          if (liquidity.length === 0) {
+            hasMore = false
+          } else {
+            allLiquidity = [...allLiquidity, ...liquidity]
+            skip += liquidity.length
+
+            // SHOW_ALL_SIZE보다 적은 데이터가 반환되면 더 이상 데이터가 없음
+            if (liquidity.length < SHOW_ALL_SIZE) {
+              hasMore = false
+            }
+          }
+        } else {
+          hasMore = false
+        }
       }
+
+      setAllTransactions(allLiquidity)
+      setHasMoreData(false)
     } catch (error) {
       console.error('Error loading all data:', error)
     } finally {

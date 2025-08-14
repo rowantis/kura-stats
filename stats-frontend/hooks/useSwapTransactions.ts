@@ -198,20 +198,42 @@ export function useSwapTransactions({
 
     setIsLoadingMore(true)
     try {
-      const { data: allData } = await client.query({
-        query: dynamicQuery,
-        variables: {
-          first: SHOW_ALL_SIZE, // 충분히 큰 값
-          skip: 0
-        },
-        fetchPolicy: 'network-only'
-      })
+      let allSwaps: SwapTransaction[] = []
+      let skip = 0
+      let hasMore = true
 
-      if (allData) {
-        const { swaps } = transformTransactions(allData)
-        setAllTransactions(swaps)
-        setHasMoreData(false)
+      // 모든 데이터를 불러올 때까지 반복 쿼리
+      while (hasMore) {
+        const { data: newData } = await client.query({
+          query: dynamicQuery,
+          variables: {
+            first: SHOW_ALL_SIZE,
+            skip: skip
+          },
+          fetchPolicy: 'network-only'
+        })
+
+        if (newData) {
+          const { swaps } = transformTransactions(newData)
+
+          if (swaps.length === 0) {
+            hasMore = false
+          } else {
+            allSwaps = [...allSwaps, ...swaps]
+            skip += swaps.length
+
+            // SHOW_ALL_SIZE보다 적은 데이터가 반환되면 더 이상 데이터가 없음
+            if (swaps.length < SHOW_ALL_SIZE) {
+              hasMore = false
+            }
+          }
+        } else {
+          hasMore = false
+        }
       }
+
+      setAllTransactions(allSwaps)
+      setHasMoreData(false)
     } catch (error) {
       console.error('Error loading all data:', error)
     } finally {

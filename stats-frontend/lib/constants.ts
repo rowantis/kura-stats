@@ -9,7 +9,7 @@ export const MAX_TIMESTAMP = "100000000000000"
 
 // 페이지네이션 기본값
 export const DEFAULT_PAGE_SIZE = 20
-export const INITIAL_LOAD_SIZE = 100
+export const INITIAL_LOAD_SIZE = 500
 export const SHOW_ALL_SIZE = 10000
 
 // 풀 타입 관련
