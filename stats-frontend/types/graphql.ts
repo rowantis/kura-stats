@@ -133,7 +133,6 @@ export interface LiquidityPosition {
 
 export interface KuraPosition {
   user: string
-  usdValue: string
   kura: string
   xkura: string
   stXkura: string

@@ -31,6 +31,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
   const [addressFilter, setAddressFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [xRatio, setXRatio] = useState(0)
 
   // GraphQL 쿼리 실행
   const { data, loading, error } = useQuery(KURA_POSITIONS_ALL_QUERY)
@@ -61,8 +62,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
 
       return {
         user: pos.owner,
-        usdValue: '0', // 우선 0으로 표시
-        kura: formatNumber("999999"),
+        kura: formatNumber("0"),
         xkura: formatNumber(formatEther(BigInt(pos.balance || '0'))),
         stXkura: formatNumber(formatEther(BigInt(pos.stakedBalance || '0'))),
         k33: formatNumber(formatEther(BigInt(pos.x33Balance || '0'))),
@@ -79,7 +79,11 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
         pos.user.toLowerCase().includes(addressFilter.toLowerCase())
       )
     }
-
+    if (xshadows.length > 0 && xshadows[0].x33Ratio && xshadows[0].x33Ratio.length > 0) {
+      setXRatio(parseFloat(xshadows[0].x33Ratio))
+    } else {
+      setXRatio(0)
+    }
     setFilteredKuraPositions(filteredKuraPos)
   }, [data, addressFilter])
 
@@ -102,7 +106,6 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
 
     const csvData = filteredKuraPositions.map(pos => [
       pos.user,
-      pos.usdValue,
       pos.kura,
       pos.xkura,
       pos.stXkura,
@@ -172,6 +175,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
           positions={filteredKuraPositions}
           currentPage={currentPage}
           pageSize={pageSize}
+          xRatio={xRatio}
         />
       </div>
     </BaseSummary>
