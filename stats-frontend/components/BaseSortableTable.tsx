@@ -137,12 +137,10 @@ export function useSortableTable<T>(data: T[], initialSortKey?: keyof T, initial
       if (bValue === null || bValue === undefined) return -1
 
       let comparison = 0
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue)
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue
+      if (sortKey === 'user') {
+        comparison = (aValue as string).localeCompare(bValue as string)
       } else {
-        comparison = String(aValue).localeCompare(String(bValue))
+        comparison = (aValue as number) - (bValue as number)
       }
 
       return sortDirection === 'asc' ? comparison : -comparison

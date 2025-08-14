@@ -325,7 +325,7 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
           ))}
         </SortableTableHeader>
         <TableBody>
-          {sortedData.map((row, rowIndex) => (
+          {sortedData.filter(row => (row.user && row.user !== "0x0000000000000000000000000000000000000000")).map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {columns.map((column, colIndex) => (
                 <TableCell key={colIndex}>
