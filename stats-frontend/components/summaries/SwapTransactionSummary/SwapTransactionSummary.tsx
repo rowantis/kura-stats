@@ -20,6 +20,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
 
   const {
     transactions: swapTransactions,
+    allTransactions,
     loading,
     error,
     hasMoreData,
@@ -42,7 +43,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
   }
 
   const downloadCSV = () => {
-    if (swapTransactions.length === 0) return
+    if (allTransactions.length === 0) return
 
     const headers = [
       'Time(UTC)',
@@ -57,7 +58,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       'Transaction ID'
     ]
 
-    const csvData = swapTransactions.map(tx => [
+    const csvData = allTransactions.map(tx => [
       formatDate(tx.timestamp),
       tx.origin,
       tx.type,

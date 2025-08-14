@@ -23,6 +23,7 @@ interface UseSwapTransactionsProps {
 
 interface UseSwapTransactionsReturn {
   transactions: SwapTransaction[]
+  allTransactions: SwapTransaction[]
   loading: boolean
   error: any
   hasMoreData: boolean
@@ -253,6 +254,7 @@ export function useSwapTransactions({
 
   return {
     transactions,
+    allTransactions,
     loading: loading || isLoadingMore,
     error,
     hasMoreData,
