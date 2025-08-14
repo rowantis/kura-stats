@@ -25,7 +25,7 @@ export default function KuraPositionTable({ positions, currentPage, pageSize }: 
         <TableHeaderCell>Vesting</TableHeaderCell>
       </TableHeader>
       <TableBody>
-        {positions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((position, index) => (
+        {positions.map((position, index) => (
           <TableRow key={index}>
             <TableCell>
               <CopyButton

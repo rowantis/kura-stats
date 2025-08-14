@@ -26,7 +26,7 @@ export default function LiquidityPositionTable({ positions, currentPage, pageSiz
         <TableHeaderCell>Token1 Amount</TableHeaderCell>
       </TableHeader>
       <TableBody>
-        {positions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((position, index) => (
+        {positions.map((position, index) => (
           <TableRow key={index}>
             <TableCell>
               <CopyButton

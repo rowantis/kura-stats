@@ -223,6 +223,8 @@ export function useLiquidityPositions({
         }))
       ]
 
+
+
       setAllPositions(transformedPositions)
       setHasMoreData(false)
     } catch (error) {
