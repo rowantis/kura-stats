@@ -1,6 +1,5 @@
 import { useQuery, useApolloClient } from '@apollo/client'
 import { useMemo, useState, useEffect } from 'react'
-import { SWAP_TRANSACTIONS_QUERY } from '@/lib/queries'
 import { transformTransactions } from '@/lib/transactions'
 import { SwapTransaction } from '@/types/graphql'
 import { parseFormattedDate } from '@/lib/utils'

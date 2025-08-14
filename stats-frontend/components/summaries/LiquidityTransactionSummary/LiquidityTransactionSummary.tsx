@@ -20,7 +20,15 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  const liquidityTransactions = useLiquidityTransactions({
+  const {
+    transactions: liquidityTransactions,
+    loading,
+    error,
+    hasMoreData,
+    loadedPages,
+    loadMore,
+    showAll
+  } = useLiquidityTransactions({
     pageSize,
     currentPage,
     addressFilter,
@@ -108,6 +116,10 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       setEndTimestamp={setEndTimestamp}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
+      hasMoreData={hasMoreData}
+      loadedPages={loadedPages}
+      onLoadMore={loadMore}
+      onShowAll={showAll}
     >
       {/* 거래 테이블 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
