@@ -29,6 +29,7 @@ interface UseLiquidityTransactionsReturn {
   loadedPages: number
   loadMore: () => Promise<void>
   showAll: () => Promise<void>
+  filteredTransactionsLength: number
 }
 
 export function useLiquidityTransactions({
@@ -246,7 +247,7 @@ export function useLiquidityTransactions({
       const { data: newData } = await client.query({
         query: dynamicQuery,
         variables: {
-          first: INITIAL_LOAD_SIZE,
+          first: pageSize * 10, // 페이지 크기의 10배만큼 로드
           skip: allTransactions.length
         },
         fetchPolicy: 'network-only'
@@ -259,7 +260,8 @@ export function useLiquidityTransactions({
           setHasMoreData(false)
         } else {
           setAllTransactions(prev => [...prev, ...liquidity])
-          setHasMoreData(liquidity.length >= INITIAL_LOAD_SIZE)
+          // 로드된 데이터가 요청한 양보다 적으면 더 이상 데이터가 없음
+          setHasMoreData(liquidity.length >= pageSize * 10)
         }
       }
     } catch (error) {
@@ -325,8 +327,13 @@ export function useLiquidityTransactions({
     return allTransactions.slice(startIndex, endIndex).filter(tx => tx.origin)
   }, [allTransactions, currentPage, pageSize])
 
-  // 실제 데이터가 있는 페이지 수만 계산
-  const loadedPages = Math.max(1, Math.ceil(allTransactions.length / pageSize))
+  // 필터링된 데이터의 길이 계산
+  const filteredTransactionsLength = useMemo(() => {
+    return allTransactions.filter(tx => tx.origin).length
+  }, [allTransactions])
+
+  // 실제 데이터가 있는 페이지 수만 계산 (필터링된 데이터 기준)
+  const loadedPages = Math.max(1, Math.ceil(filteredTransactionsLength / pageSize))
 
   return {
     transactions,
@@ -335,6 +342,7 @@ export function useLiquidityTransactions({
     hasMoreData,
     loadedPages,
     loadMore,
-    showAll
+    showAll,
+    filteredTransactionsLength
   }
 } 

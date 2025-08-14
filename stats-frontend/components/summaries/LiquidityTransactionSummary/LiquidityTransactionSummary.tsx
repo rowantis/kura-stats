@@ -27,7 +27,8 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     hasMoreData,
     loadedPages,
     loadMore,
-    showAll
+    showAll,
+    filteredTransactionsLength
   } = useLiquidityTransactions({
     pageSize,
     currentPage,
@@ -101,7 +102,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     <BaseSummary
       currentPage={currentPage}
       pageSize={pageSize}
-      totalItems={liquidityTransactions.length}
+      totalItems={filteredTransactionsLength}
       onPageChange={handlePageChange}
       activeTab="liquidity"
       addressFilter={addressFilter}
