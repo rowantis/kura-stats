@@ -4,7 +4,14 @@ import { useMemo, useEffect } from 'react'
 import { useSwapTransactions } from '@/hooks/useSwapTransactions'
 import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
 import { useKuraPositions } from '@/hooks/useKuraPositions'
-import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/BaseTable'
+import BaseSortableTable, {
+  SortableTableHeader,
+  SortableTableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  useSortableTable
+} from '@/components/BaseSortableTable'
 import CopyButton from '@/components/CopyButton'
 import { formatAddress } from '@/lib/utils'
 import { formatEther } from 'viem'
@@ -41,7 +48,7 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
 
   // CSV 다운로드 함수
   const downloadCSV = () => {
-    if (!aggregatedUserData.length) {
+    if (!sortedData.length) {
       alert('다운로드할 데이터가 없습니다. 먼저 조회를 실행해주세요.')
       return
     }
@@ -60,7 +67,7 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
 
     const csvContent = [
       headers.join(','),
-      ...aggregatedUserData.map(row => [
+      ...sortedData.map(row => [
         row.user,
         row.txCount,
         row.tradeVolume.toFixed(2),
@@ -173,82 +180,103 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
       }
     })
 
-    return Array.from(userMap.values()).sort((a, b) => b.tradeVolume - a.tradeVolume)
+    return Array.from(userMap.values())
   }, [swapTransactions, liquidityTransactions, kuraPositions])
 
-  const columns = [
-    {
-      header: 'User',
-      accessor: 'user' as keyof UserData,
-      cell: (value: any) => (
-        <div className="flex items-center space-x-2">
-          <CopyButton
-            copyText={value}
-            showText={formatAddress(value)}
-            label="유저"
-          />
-        </div>
-      )
-    },
-    {
-      header: 'Tx Count',
-      accessor: 'txCount' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">{value.toLocaleString()}</span>
-      )
-    },
-    {
-      header: 'Trade Volume',
-      accessor: 'tradeVolume' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-      )
-    },
-    {
-      header: 'Liquidity Net',
-      accessor: 'liquidityNet' as keyof UserData,
-      cell: (value: any) => (
-        <span className={`text-sm font-medium ${value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-          ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-      )
-    },
-    {
-      header: 'Kura',
-      accessor: 'kura' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
-      )
-    },
-    {
-      header: 'xKura',
-      accessor: 'xkura' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
-      )
-    },
-    {
-      header: 'st xKura',
-      accessor: 'stXkura' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
-      )
-    },
-    {
-      header: 'K33',
-      accessor: 'k33' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
-      )
-    },
-    {
-      header: 'Vestings',
-      accessor: 'vesting' as keyof UserData,
-      cell: (value: any) => (
-        <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
-      )
-    }
-  ]
+  // 정렬 기능 사용
+  const { sortedData, handleSort, getSortDirection } = useSortableTable(
+    aggregatedUserData,
+    'tradeVolume',
+    'desc'
+  )
+
+  const columns: Array<{
+    header: string
+    accessor: keyof UserData
+    sortable: boolean
+    cell: (value: any) => React.ReactNode
+  }> = [
+      {
+        header: 'User',
+        accessor: 'user' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <div className="flex items-center space-x-2">
+            <CopyButton
+              copyText={value}
+              showText={formatAddress(value)}
+              label="유저"
+            />
+          </div>
+        )
+      },
+      {
+        header: 'Tx Count',
+        accessor: 'txCount' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">{value.toLocaleString()}</span>
+        )
+      },
+      {
+        header: 'Trade Volume',
+        accessor: 'tradeVolume' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        )
+      },
+      {
+        header: 'Liquidity Net',
+        accessor: 'liquidityNet' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className={`text-sm font-medium ${value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        )
+      },
+      {
+        header: 'Kura',
+        accessor: 'kura' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
+        )
+      },
+      {
+        header: 'xKura',
+        accessor: 'xkura' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">{Number(Number(formatEther(value).toString()).toFixed(3))}</span>
+        )
+      },
+      {
+        header: 'st xKura',
+        accessor: 'stXkura' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">{Number(Number(formatEther(value).toString()).toFixed(3))}</span>
+        )
+      },
+      {
+        header: 'K33',
+        accessor: 'k33' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">{Number(Number(formatEther(value).toString()).toFixed(3))}</span>
+        )
+      },
+      {
+        header: 'Vestings',
+        accessor: 'vesting' as keyof UserData,
+        sortable: true,
+        cell: (value: any) => (
+          <span className="text-sm font-medium">{Number(Number(formatEther(value).toString()).toFixed(3))}</span>
+        )
+      }
+    ]
 
   if (loading) {
     return (
@@ -260,16 +288,21 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
 
   return (
     <div>
-      <BaseTable showPagination={false}>
-        <TableHeader>
+      <BaseSortableTable showPagination={false}>
+        <SortableTableHeader>
           {columns.map((column, index) => (
-            <TableHeaderCell key={index}>
+            <SortableTableHeaderCell
+              key={index}
+              sortable={column.sortable}
+              sortDirection={getSortDirection(column.accessor)}
+              onSort={() => handleSort(column.accessor)}
+            >
               {column.header}
-            </TableHeaderCell>
+            </SortableTableHeaderCell>
           ))}
-        </TableHeader>
+        </SortableTableHeader>
         <TableBody>
-          {aggregatedUserData.map((row, rowIndex) => (
+          {sortedData.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {columns.map((column, colIndex) => (
                 <TableCell key={colIndex}>
@@ -279,7 +312,7 @@ export default function AllUsersTable({ loading }: AllUsersTableProps) {
             </TableRow>
           ))}
         </TableBody>
-      </BaseTable>
+      </BaseSortableTable>
     </div>
   )
 } 
