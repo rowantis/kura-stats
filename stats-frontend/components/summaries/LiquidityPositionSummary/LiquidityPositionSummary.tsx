@@ -47,8 +47,8 @@ interface LiquidityPositionSummaryProps {
 export default function LiquidityPositionSummary({ onTabChange }: LiquidityPositionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startTimestamp, setStartTimestamp] = useState('')
+  const [endTimestamp, setEndTimestamp] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
@@ -75,18 +75,17 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
     }
 
     // 기간 필터링
-    if (startDate || endDate) {
+    if (startTimestamp || endTimestamp) {
       filteredLiquidityPos = filteredLiquidityPos.filter(pos => {
-        const posTime = parseFormattedDate(pos.createdTime)
 
-        if (startDate && Number(posTime) < parseFormattedDate(startDate)) return false
-        if (endDate && Number(posTime) > parseFormattedDate(endDate)) return false
+        if (startTimestamp && Number(pos.createdTime) < Number(startTimestamp)) return false
+        if (endTimestamp && Number(pos.createdTime) > Number(endTimestamp)) return false
         return true
       })
     }
 
     setFilteredLiquidityPositions(filteredLiquidityPos)
-  }, [addressFilter, poolTypeFilter, startDate, endDate])
+  }, [addressFilter, poolTypeFilter, startTimestamp, endTimestamp])
 
 
 
@@ -152,10 +151,10 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
       setTypeFilter={() => { }}
       poolTypeFilter={poolTypeFilter}
       setPoolTypeFilter={setPoolTypeFilter}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
+      startTimestamp={startTimestamp}
+      setStartTimestamp={setStartTimestamp}
+      endTimestamp={endTimestamp}
+      setEndTimestamp={setEndTimestamp}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
     >

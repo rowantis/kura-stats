@@ -18,10 +18,10 @@ interface BaseSummaryProps {
   setTypeFilter: (value: string) => void
   poolTypeFilter: "V2" | "V3" | "All"
   setPoolTypeFilter: (value: "V2" | "V3" | "All") => void
-  startDate: string
-  setStartDate: (value: string) => void
-  endDate: string
-  setEndDate: (value: string) => void
+  startTimestamp: string
+  setStartTimestamp: (value: string) => void
+  endTimestamp: string
+  setEndTimestamp: (value: string) => void
   setPageSize: (value: number) => void
   onDownloadCSV: () => void
   // Pagination props
@@ -44,10 +44,10 @@ export default function BaseSummary({
   setTypeFilter,
   poolTypeFilter,
   setPoolTypeFilter,
-  startDate,
-  setStartDate,
-  endDate,
-  setEndDate,
+  startTimestamp,
+  setStartTimestamp,
+  endTimestamp,
+  setEndTimestamp,
   setPageSize,
   onDownloadCSV,
   hasMoreData,
@@ -68,10 +68,10 @@ export default function BaseSummary({
         setTypeFilter={setTypeFilter}
         poolTypeFilter={poolTypeFilter}
         setPoolTypeFilter={setPoolTypeFilter}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
+        startTimestamp={startTimestamp}
+        setStartTimestamp={setStartTimestamp}
+        endTimestamp={endTimestamp}
+        setEndTimestamp={setEndTimestamp}
         pageSize={pageSize}
         setPageSize={setPageSize}
         currentDataLength={totalItems}

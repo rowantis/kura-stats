@@ -10,8 +10,8 @@ interface UseLiquidityTransactionsProps {
   addressFilter?: string
   typeFilter?: string
   poolTypeFilter?: string
-  startDate?: string
-  endDate?: string
+  startTimestamp?: string
+  endTimestamp?: string
 }
 
 export function useLiquidityTransactions({
@@ -20,8 +20,8 @@ export function useLiquidityTransactions({
   addressFilter,
   typeFilter,
   poolTypeFilter,
-  startDate,
-  endDate,
+  startTimestamp,
+  endTimestamp,
 }: UseLiquidityTransactionsProps) {
   const skip = (currentPage - 1) * pageSize
 
@@ -60,20 +60,17 @@ export function useLiquidityTransactions({
     }
 
     // 기간 필터링
-    if (startDate || endDate) {
+    if (startTimestamp || endTimestamp) {
       filteredLiquidity = filteredLiquidity.filter(tx => {
-        const txTime = new Date(Number(tx.timestamp) * 1000)
-        const start = startDate ? new Date(startDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
-        const end = endDate ? new Date(endDate.replace(/\./g, ' ').replace(/(\d{2})\. (\d{2})\. (\d{2}):(\d{2}):(\d{2})/, '2024-$1-$2T$3:$4:$5Z')) : null
 
-        if (start && txTime < start) return false
-        if (end && txTime > end) return false
+        if (startTimestamp && Number(tx.timestamp) < Number(startTimestamp)) return false
+        if (endTimestamp && Number(tx.timestamp) > Number(endTimestamp)) return false
         return true
       })
     }
 
     return filteredLiquidity
-  }, [data, addressFilter, typeFilter, poolTypeFilter, startDate, endDate])
+  }, [data, addressFilter, typeFilter, poolTypeFilter, startTimestamp, endTimestamp])
 
   return transactions
 } 

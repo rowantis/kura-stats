@@ -15,8 +15,8 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
   const [addressFilter, setAddressFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startTimestamp, setStartTimestamp] = useState('')
+  const [endTimestamp, setEndTimestamp] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
@@ -26,8 +26,8 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     addressFilter,
     typeFilter,
     poolTypeFilter,
-    startDate,
-    endDate,
+    startTimestamp,
+    endTimestamp,
   })
 
 
@@ -102,10 +102,10 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       setTypeFilter={setTypeFilter}
       poolTypeFilter={poolTypeFilter}
       setPoolTypeFilter={setPoolTypeFilter}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
+      startTimestamp={startTimestamp}
+      setStartTimestamp={setStartTimestamp}
+      endTimestamp={endTimestamp}
+      setEndTimestamp={setEndTimestamp}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
     >

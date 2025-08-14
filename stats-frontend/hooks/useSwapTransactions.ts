@@ -18,8 +18,8 @@ interface UseSwapTransactionsProps {
   currentPage: number
   addressFilter?: string
   poolTypeFilter?: string
-  startDate?: string
-  endDate?: string
+  startTimestamp?: string
+  endTimestamp?: string
 }
 
 interface UseSwapTransactionsReturn {
@@ -37,8 +37,8 @@ export function useSwapTransactions({
   currentPage,
   addressFilter,
   poolTypeFilter,
-  startDate,
-  endDate,
+  startTimestamp,
+  endTimestamp,
 }: UseSwapTransactionsProps): UseSwapTransactionsReturn {
   const client = useApolloClient()
 
@@ -56,9 +56,9 @@ export function useSwapTransactions({
       clConditions.push(`origin_contains: "${addressFilter}"`)
     }
 
-    if (startDate || endDate) {
-      const start = startDate ? parseFormattedDate(startDate) : MIN_TIMESTAMP
-      const end = endDate ? parseFormattedDate(endDate) : MAX_TIMESTAMP
+    if (startTimestamp || endTimestamp) {
+      const start = startTimestamp ? startTimestamp : MIN_TIMESTAMP
+      const end = endTimestamp ? endTimestamp : MAX_TIMESTAMP
       clConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
       legacyConditions.push(`transaction_: {timestamp_gte: "${start}", timestamp_lte: "${end}"}`)
     }
@@ -148,7 +148,7 @@ export function useSwapTransactions({
   useEffect(() => {
     setAllTransactions([])
     setHasMoreData(true)
-  }, [addressFilter, poolTypeFilter, startDate, endDate])
+  }, [addressFilter, poolTypeFilter, startTimestamp, endTimestamp])
 
   // 초기 데이터 로딩
   useEffect(() => {

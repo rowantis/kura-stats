@@ -123,10 +123,10 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
       setTypeFilter={() => { }}
       poolTypeFilter="All"
       setPoolTypeFilter={() => { }}
-      startDate=""
-      setStartDate={() => { }}
-      endDate=""
-      setEndDate={() => { }}
+      startTimestamp=""
+      setStartTimestamp={() => { }}
+      endTimestamp=""
+      setEndTimestamp={() => { }}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
     >

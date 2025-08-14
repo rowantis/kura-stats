@@ -87,6 +87,17 @@ export function parseFormattedDate(formattedDate: string): number {
   }
 }
 
+export function parseFormattedDate2(formattedDate: string): number {
+  // parse 2025-08-13
+  if (!formattedDate) {
+    return 0
+  }
+
+  const date = new Date(formattedDate)
+  return Math.floor(date.getTime() / 1000)
+
+}
+
 // Fee tier를 tick spacing으로 변환
 const FEE_TIER_TO_TICK_SPACING: Record<number, number> = {
   100: 1,

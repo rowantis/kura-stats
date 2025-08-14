@@ -13,8 +13,8 @@ interface SwapTransactionSummaryProps {
 export default function SwapTransactionSummary({ onTabChange }: SwapTransactionSummaryProps) {
   const [addressFilter, setAddressFilter] = useState('')
   const [poolTypeFilter, setPoolTypeFilter] = useState<"V2" | "V3" | "All">('All')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startTimestamp, setStartTimestamp] = useState('')
+  const [endTimestamp, setEndTimestamp] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
@@ -31,8 +31,8 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
     currentPage,
     addressFilter,
     poolTypeFilter,
-    startDate,
-    endDate,
+    startTimestamp,
+    endTimestamp,
   })
 
 
@@ -103,10 +103,10 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       setTypeFilter={() => { }}
       poolTypeFilter={poolTypeFilter}
       setPoolTypeFilter={setPoolTypeFilter}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
+      startTimestamp={startTimestamp}
+      setStartTimestamp={setStartTimestamp}
+      endTimestamp={endTimestamp}
+      setEndTimestamp={setEndTimestamp}
       setPageSize={setPageSize}
       onDownloadCSV={downloadCSV}
       hasMoreData={hasMoreData}
