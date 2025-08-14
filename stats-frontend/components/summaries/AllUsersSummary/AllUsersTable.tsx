@@ -16,6 +16,32 @@ import CopyButton from '@/components/CopyButton'
 import { formatAddress } from '@/lib/utils'
 import { formatEther } from 'viem'
 import { KuraPosition, LiquidityTransaction, SwapTransaction } from '@/types/graphql'
+import { isTeamAccount, isTeamFarmingAccount } from '@/lib/constants'
+
+interface AccountTypeChipProps {
+  type: 'TEAM' | 'FARM';
+}
+
+export function AccountTypeChip({ type }: AccountTypeChipProps) {
+  const getChipColor = (t: string) => {
+    switch (t) {
+      case 'TEAM':
+        return 'bg-blue-100 text-blue-700';
+      case 'FARM':
+        return 'bg-green-100 text-green-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  return (
+    <span
+      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getChipColor(type)}`}
+    >
+      {type}
+    </span>
+  );
+}
 
 interface AllUsersTableProps {
   loading: boolean
@@ -200,6 +226,8 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
               showText={formatAddress(value)}
               label="유저"
             />
+            {isTeamAccount(value) && <AccountTypeChip type="TEAM" />}
+            {isTeamFarmingAccount(value) && <AccountTypeChip type="FARM" />}
           </div>
         )
       },
@@ -229,14 +257,14 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
           </span>
         )
       },
-      {
-        header: 'Kura',
-        accessor: 'kura' as keyof UserData,
-        sortable: true,
-        cell: (value: any) => (
-          <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
-        )
-      },
+      // {
+      //   header: 'Kura',
+      //   accessor: 'kura' as keyof UserData,
+      //   sortable: true,
+      //   cell: (value: any) => (
+      //     <span className="text-sm font-medium">{Number(formatEther(value).toString()).toFixed(3)}</span>
+      //   )
+      // },
       {
         header: 'xKura',
         accessor: 'xkura' as keyof UserData,
