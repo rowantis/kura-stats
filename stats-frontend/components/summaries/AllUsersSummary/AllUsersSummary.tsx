@@ -24,11 +24,12 @@ interface UserData {
 
 export default function AllUsersSummary({ onTabChange }: AllUsersSummaryProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [showAllClicked, setShowAllClicked] = useState(false)
 
   // 훅들 초기화 (showAll을 위해 필요한 파라미터들)
   const { showAll: showAllSwaps, loading: swapsLoading } = useSwapTransactions({
     pageSize: 1000,
-    currentPage: 1
+    currentPage: 1,
   })
 
   const { showAll: showAllLiquidity, loading: liquidityLoading } = useLiquidityTransactions({
@@ -40,6 +41,7 @@ export default function AllUsersSummary({ onTabChange }: AllUsersSummaryProps) {
 
   const handleFetchData = async () => {
     setIsLoading(true)
+    setShowAllClicked(true)
     try {
       // 모든 데이터를 병렬로 가져오기
       await Promise.all([
@@ -75,9 +77,11 @@ export default function AllUsersSummary({ onTabChange }: AllUsersSummaryProps) {
           </div>
         </div>
 
-        <AllUsersTable
-          loading={isLoading || swapsLoading || liquidityLoading || kuraLoading}
-        />
+        {showAllClicked && (
+          <AllUsersTable
+            loading={isLoading || swapsLoading || liquidityLoading || kuraLoading}
+          />
+        )}
       </div>
     </div>
   )
