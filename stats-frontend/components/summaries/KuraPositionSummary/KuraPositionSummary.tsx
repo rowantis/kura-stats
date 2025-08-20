@@ -46,11 +46,12 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
     const { xshadowPositions, xshadowVests, xshadows } = data
 
     // 유저별 vestingAmount 계산 (status가 "0"인 것만)
-    const userVestingMap = new Map<string, string>()
+    const userVestingMap = new Map<string, bigint>()
     xshadowVests.forEach((vest: XShadowVest) => {
       if (vest.status === "0") {
-        const currentAmount = userVestingMap.get(vest.owner) || '0'
-        const newAmount = (parseFloat(currentAmount) + parseFloat(vest.vestingAmount)).toString()
+        const currentAmount = userVestingMap.get(vest.owner) || BigInt(0)
+        const vestingAmount = BigInt(vest.vestingAmount || '0')
+        const newAmount = currentAmount + vestingAmount
         userVestingMap.set(vest.owner, newAmount)
       }
     })
@@ -58,7 +59,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
 
     // KuraPosition 데이터 생성
     const kuraPositions: KuraPosition[] = xshadowPositions.map((pos: XShadowPosition) => {
-      const vestingAmount = userVestingMap.get(pos.owner) || '0'
+      const vestingAmount = userVestingMap.get(pos.owner) || BigInt(0)
 
       return {
         user: pos.owner,
@@ -66,7 +67,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
         xkura: formatNumber(formatEther(BigInt(pos.balance || '0'))),
         stXkura: formatNumber(formatEther(BigInt(pos.stakedBalance || '0'))),
         k33: formatNumber(formatEther(BigInt(pos.x33Balance || '0'))),
-        vesting: formatNumber(formatEther(BigInt(vestingAmount)))
+        vesting: formatNumber(formatEther(vestingAmount))
       }
     })
 
