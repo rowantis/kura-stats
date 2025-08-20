@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@apollo/client'
 import { formatEther } from 'viem'
 import { KuraPosition, XShadowPosition, XShadowVest } from '@/types/graphql'
@@ -93,47 +93,50 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
     setCurrentPage(page)
   }
 
-  const downloadCSV = () => {
-    if (filteredKuraPositions.length === 0) return
+  const downloadCSV = useMemo(() => {
+    const _downloadCSV = () => {
+      if (filteredKuraPositions.length === 0) return
 
-    const headers = [
-      'User',
-      'USD Value',
-      'KURA',
-      'xKURA',
-      'st.xKURA',
-      'K33',
-      'Vesting'
-    ]
+      const headers = [
+        'User',
+        'USD Value',
+        'KURA',
+        'xKURA',
+        'st.xKURA',
+        'K33',
+        'Vesting'
+      ]
 
-    const csvData = filteredKuraPositions.map(pos => [
-      pos.user,
-      pos.kura,
-      pos.xkura,
-      pos.stXkura,
-      pos.k33,
-      pos.vesting
-    ])
+      const csvData = filteredKuraPositions.map(pos => [
+        pos.user,
+        pos.kura,
+        pos.xkura,
+        pos.stXkura,
+        pos.k33,
+        pos.vesting
+      ])
 
-    const filename = `kura-positions-${getCurrentDateKST()}.csv`
+      const filename = `kura-positions-${getCurrentDateKST()}.csv`
 
-    // CSV 문자열 생성
-    const csvContent = [
-      headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n')
+      // CSV 문자열 생성
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n')
 
-    // 파일 다운로드
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', filename)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+      // 파일 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', filename)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+    return _downloadCSV
+  }, [filteredKuraPositions])
 
   if (loading) {
     return (

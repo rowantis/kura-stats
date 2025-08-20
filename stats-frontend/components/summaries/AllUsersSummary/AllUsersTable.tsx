@@ -63,67 +63,6 @@ interface UserData {
 }
 
 export default function AllUsersTable({ loading, swapTransactions, liquidityTransactions, kuraPositions }: AllUsersTableProps) {
-  // 훅들에서 데이터 가져오기
-
-  // CSV 다운로드 함수
-  const downloadCSV = () => {
-    if (!sortedData.length) {
-      alert('다운로드할 데이터가 없습니다. 먼저 조회를 실행해주세요.')
-      return
-    }
-
-    const headers = [
-      'User',
-      "Type",
-      'Tx Count',
-      'Trade Volume ($)',
-      'Liquidity Net ($)',
-      'Kura',
-      'xKura',
-      'st xKura',
-      'K33',
-      'Vestings'
-    ]
-
-    const csvContent = [
-      headers.join(','),
-      ...sortedData.filter(row => (row.user && row.user !== "0x0000000000000000000000000000000000000000")).map(row => [
-        row.user,
-        isTeamAccount(row.user) ? 'TEAM' : isTeamFarmingAccount(row.user) ? 'FARM' : 'USER',
-        row.txCount,
-        row.tradeVolume.toFixed(2),
-        row.liquidityNet.toFixed(2),
-        formatEther(BigInt(row.kura)).toString(),
-        formatEther(BigInt(row.xkura)).toString(),
-        formatEther(BigInt(row.stXkura)).toString(),
-        formatEther(BigInt(row.k33)).toString(),
-        formatEther(BigInt(row.vesting)).toString()
-      ].join(','))
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `all-users-${getCurrentDateKST()}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  // CSV 다운로드 이벤트 리스너
-  useEffect(() => {
-    const handleDownloadCSV = () => {
-      downloadCSV()
-    }
-
-    window.addEventListener('downloadCSV', handleDownloadCSV)
-    return () => {
-      window.removeEventListener('downloadCSV', handleDownloadCSV)
-    }
-  }, [])
-
   // 사용자별 데이터 집계
   const aggregatedUserData = useMemo(() => {
     const userMap = new Map<string, UserData>()
@@ -210,6 +149,65 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
     'tradeVolume',
     'desc'
   )
+
+  // 훅들에서 데이터 가져오기
+
+  // CSV 다운로드 이벤트 리스너
+  useEffect(() => {
+    const handleDownloadCSV = () => {
+      console.log("handleDownloadCSV", sortedData.length)
+      if (!sortedData.length) {
+        alert('다운로드할 데이터가 없습니다. 먼저 조회를 실행해주세요.')
+        return
+      }
+
+      const headers = [
+        'User',
+        "Type",
+        'Tx Count',
+        'Trade Volume ($)',
+        'Liquidity Net ($)',
+        'Kura',
+        'xKura',
+        'st xKura',
+        'K33',
+        'Vestings'
+      ]
+
+      const csvContent = [
+        headers.join(','),
+        ...sortedData.filter(row => (row.user && row.user !== "0x0000000000000000000000000000000000000000")).map(row => [
+          row.user,
+          isTeamAccount(row.user) ? 'TEAM' : isTeamFarmingAccount(row.user) ? 'FARM' : 'USER',
+          row.txCount,
+          row.tradeVolume.toFixed(2),
+          row.liquidityNet.toFixed(2),
+          formatEther(BigInt(row.kura)).toString(),
+          formatEther(BigInt(row.xkura)).toString(),
+          formatEther(BigInt(row.stXkura)).toString(),
+          formatEther(BigInt(row.k33)).toString(),
+          formatEther(BigInt(row.vesting)).toString()
+        ].join(','))
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `all-users-${getCurrentDateKST()}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+
+    window.addEventListener('downloadCSV', handleDownloadCSV)
+    return () => {
+      window.removeEventListener('downloadCSV', handleDownloadCSV)
+    }
+  }, [sortedData])
+
+
 
   const columns: Array<{
     header: string

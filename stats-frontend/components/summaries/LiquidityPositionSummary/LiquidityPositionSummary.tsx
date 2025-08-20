@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import LiquidityPositionTable from '@/components/summaries/LiquidityPositionSummary/LiquidityPositionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
 import { useLiquidityPositions } from '@/hooks/useLiquidityPositions'
@@ -36,48 +36,51 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
     setCurrentPage(page)
   }
 
-  const downloadCSV = () => {
-    if (liquidityPositions.length === 0) return
+  const downloadCSV = useMemo(() => {
+    const _downloadCSV = () => {
+      if (liquidityPositions.length === 0) return
 
-    const headers = [
-      'User',
-      'Pool Type',
-      'USD Value',
-      'Token0',
-      'Token1',
-      'Token0 Amount',
-      'Token1 Amount'
-    ]
+      const headers = [
+        'User',
+        'Pool Type',
+        'USD Value',
+        'Token0',
+        'Token1',
+        'Token0 Amount',
+        'Token1 Amount'
+      ]
 
-    const csvData = liquidityPositions.map((pos: any) => [
-      pos.user,
-      pos.poolType,
-      pos.usdValue,
-      pos.token0.symbol,
-      pos.token1.symbol,
-      pos.token0Amount,
-      pos.token1Amount
-    ])
+      const csvData = liquidityPositions.map((pos: any) => [
+        pos.user,
+        pos.poolType,
+        pos.usdValue,
+        pos.token0.symbol,
+        pos.token1.symbol,
+        pos.token0Amount,
+        pos.token1Amount
+      ])
 
-    const filename = `kura-liquidity-positions-${getCurrentDateKST()}.csv`
+      const filename = `kura-liquidity-positions-${getCurrentDateKST()}.csv`
 
-    // CSV 문자열 생성
-    const csvContent = [
-      headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n')
+      // CSV 문자열 생성
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n')
 
-    // 파일 다운로드
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', filename)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+      // 파일 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', filename)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+    return _downloadCSV
+  }, [liquidityPositions])
 
   return (
     <BaseSummary
