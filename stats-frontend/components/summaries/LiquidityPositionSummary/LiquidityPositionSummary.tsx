@@ -4,6 +4,7 @@ import { useState } from 'react'
 import LiquidityPositionTable from '@/components/summaries/LiquidityPositionSummary/LiquidityPositionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
 import { useLiquidityPositions } from '@/hooks/useLiquidityPositions'
+import { getCurrentDateKST } from '@/lib/utils'
 
 interface LiquidityPositionSummaryProps {
   onTabChange: (tab: string) => void
@@ -58,7 +59,7 @@ export default function LiquidityPositionSummary({ onTabChange }: LiquidityPosit
       pos.token1Amount
     ])
 
-    const filename = `kura-liquidity-positions-${new Date().toISOString().split('T')[0]}.csv`
+    const filename = `kura-liquidity-positions-${getCurrentDateKST()}.csv`
 
     // CSV 문자열 생성
     const csvContent = [

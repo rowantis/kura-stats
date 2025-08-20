@@ -13,7 +13,7 @@ import BaseSortableTable, {
   useSortableTable
 } from '@/components/BaseSortableTable'
 import CopyButton from '@/components/CopyButton'
-import { formatAddress } from '@/lib/utils'
+import { formatAddress, getCurrentDateKST } from '@/lib/utils'
 import { formatEther } from 'viem'
 import { KuraPosition, LiquidityTransaction, SwapTransaction } from '@/types/graphql'
 import { isTeamAccount, isTeamFarmingAccount } from '@/lib/constants'
@@ -105,7 +105,7 @@ export default function AllUsersTable({ loading, swapTransactions, liquidityTran
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `all-users-${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', `all-users-${getCurrentDateKST()}.csv`)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()

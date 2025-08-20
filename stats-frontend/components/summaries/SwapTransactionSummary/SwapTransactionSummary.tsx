@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import SwapTransactionTable from '@/components/summaries/SwapTransactionSummary/SwapTransactionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
-import { formatDate } from '@/lib/utils'
+import { formatDate, getCurrentDateKST } from '@/lib/utils'
 import { useSwapTransactions } from '@/hooks/useSwapTransactions'
 
 interface SwapTransactionSummaryProps {
@@ -71,7 +71,7 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
       tx.transactionId
     ])
 
-    const filename = `kura-dex-swap-${new Date().toISOString().split('T')[0]}.csv`
+    const filename = `kura-dex-swap-${getCurrentDateKST()}.csv`
 
     // CSV 문자열 생성
     const csvContent = [

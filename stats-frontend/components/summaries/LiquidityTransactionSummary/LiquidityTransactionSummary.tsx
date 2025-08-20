@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { LiquidityTransaction } from '@/types/graphql'
 import LiquidityTransactionTable from '@/components/summaries/LiquidityTransactionSummary/LiquidityTransactionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
-import { formatDate } from '@/lib/utils'
+import { formatDate, getCurrentDateKST } from '@/lib/utils'
 import { useLiquidityTransactions } from '@/hooks/useLiquidityTransactions'
 
 interface LiquidityTransactionSummaryProps {
@@ -75,7 +75,7 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
       tx.transactionId
     ])
 
-    const filename = `kura-dex-liquidity-${new Date().toISOString().split('T')[0]}.csv`
+    const filename = `kura-dex-liquidity-${getCurrentDateKST()}.csv`
 
     // CSV 문자열 생성
     const csvContent = [

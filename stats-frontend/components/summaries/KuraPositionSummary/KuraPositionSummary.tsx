@@ -7,6 +7,7 @@ import { KuraPosition, XShadowPosition, XShadowVest } from '@/types/graphql'
 import { KURA_POSITIONS_ALL_QUERY } from '@/lib/queries'
 import KuraPositionTable from '@/components/summaries/KuraPositionSummary/KuraPositionTable'
 import BaseSummary from '@/components/summaries/BaseSummary'
+import { getCurrentDateKST } from '@/lib/utils'
 
 // 숫자 포맷팅 함수: 유효숫자까지만 표시, 최대 6자리 소숫점
 const formatNumber = (value: string): string => {
@@ -114,7 +115,7 @@ export default function KuraPositionSummary({ onTabChange }: KuraPositionSummary
       pos.vesting
     ])
 
-    const filename = `kura-positions-${new Date().toISOString().split('T')[0]}.csv`
+    const filename = `kura-positions-${getCurrentDateKST()}.csv`
 
     // CSV 문자열 생성
     const csvContent = [

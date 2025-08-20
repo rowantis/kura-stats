@@ -44,17 +44,19 @@ export function formatDate(timestamp: string): string {
     return ''
   }
 
-  // UTC 시간을 가져와서 기존 형식으로 포맷
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
-  const day = String(date.getUTCDate()).padStart(2, '0')
-  const hours = String(date.getUTCHours()).padStart(2, '0')
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
-  const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+  // KST 시간으로 변환 (UTC + 9시간)
+  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000)
+
+  const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(kstDate.getUTCDate()).padStart(2, '0')
+  const hours = String(kstDate.getUTCHours()).padStart(2, '0')
+  const minutes = String(kstDate.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(kstDate.getUTCSeconds()).padStart(2, '0')
 
   return `${month}. ${day}. ${hours}:${minutes}:${seconds}`
 }
 
-// formatDate의 역함수: UTC 형식 날짜 문자열을 timestamp로 변환
+// formatDate의 역함수: KST 형식 날짜 문자열을 timestamp로 변환
 export function parseFormattedDate(formattedDate: string): number {
   if (!formattedDate) {
     return 0
@@ -69,9 +71,9 @@ export function parseFormattedDate(formattedDate: string): number {
 
     const [, month, day, hours, minutes, seconds] = match
 
-    // 현재 연도를 기준으로 UTC Date 객체 생성
+    // 현재 연도를 기준으로 KST Date 객체 생성
     const currentYear = new Date().getUTCFullYear()
-    const date = new Date(Date.UTC(
+    const kstDate = new Date(Date.UTC(
       currentYear,
       parseInt(month) - 1, // month는 0-based
       parseInt(day),
@@ -80,22 +82,39 @@ export function parseFormattedDate(formattedDate: string): number {
       parseInt(seconds)
     ))
 
+    // KST를 UTC로 변환 (KST - 9시간)
+    const utcDate = new Date(kstDate.getTime() - 9 * 60 * 60 * 1000)
+
     // timestamp를 초 단위로 반환
-    return Math.floor(date.getTime() / 1000)
+    return Math.floor(utcDate.getTime() / 1000)
   } catch (error) {
     return 0
   }
 }
 
 export function parseFormattedDate2(formattedDate: string): number {
-  // parse 2025-08-13
+  // parse 2025-08-13 (KST 기준)
   if (!formattedDate) {
     return 0
   }
 
-  const date = new Date(formattedDate)
-  return Math.floor(date.getTime() / 1000)
+  // KST 기준 날짜를 UTC로 변환
+  const kstDate = new Date(formattedDate + 'T00:00:00+09:00')
+  const utcDate = new Date(kstDate.getTime() - 9 * 60 * 60 * 1000)
 
+  return Math.floor(utcDate.getTime() / 1000)
+}
+
+// KST 기준 현재 날짜를 YYYY-MM-DD 형식으로 반환
+export function getCurrentDateKST(): string {
+  const now = new Date()
+  const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+
+  const year = kstDate.getUTCFullYear()
+  const month = String(kstDate.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(kstDate.getUTCDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
 }
 
 // Fee tier를 tick spacing으로 변환
