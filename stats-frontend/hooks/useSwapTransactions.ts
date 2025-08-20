@@ -78,6 +78,7 @@ export function useSwapTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
+          orderDirection: desc,
           ${clWhereClause}
         ) {
           amount0
@@ -104,6 +105,7 @@ export function useSwapTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
+          orderDirection: desc,
           ${legacyWhereClause}
         ) {
           amount0In

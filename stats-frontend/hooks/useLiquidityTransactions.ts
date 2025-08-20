@@ -109,6 +109,7 @@ export function useLiquidityTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
+          orderDirection: desc,
           ${clMintsWhereClause}
         ) {
           amount0
@@ -135,6 +136,7 @@ export function useLiquidityTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
+          orderDirection: desc,
           ${clBurnsWhereClause}
         ) {
           amount0
@@ -161,6 +163,7 @@ export function useLiquidityTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
+          orderDirection: desc,
           ${legacyMintsWhereClause}
         ) {
           amount0
@@ -187,6 +190,7 @@ export function useLiquidityTransactions({
           first: $first, 
           skip: $skip,
           orderBy: transaction__timestamp,
+          orderDirection: desc,
           ${legacyBurnsWhereClause}
         ) {
           amount0
