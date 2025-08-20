@@ -48,7 +48,7 @@ function DashboardContent() {
               >
                 Liquidity
               </button>
-              <button
+              {/* <button
                 onClick={() => handleTabChange('liquidityPosition')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'liquidityPosition'
                   ? 'border-blue-500 text-blue-600'
@@ -56,7 +56,7 @@ function DashboardContent() {
                   }`}
               >
                 Liquidity Positions
-              </button>
+              </button> */}
               <button
                 onClick={() => handleTabChange('kuraPosition')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'kuraPosition'
