@@ -57,7 +57,7 @@ export function useLiquidityTransactions({
 
     // 주소 필터링
     if (addressFilter) {
-      commonLegacyConditions.push(`sender_contains: "${addressFilter}"`)
+      commonLegacyConditions.push(`origin_contains: "${addressFilter}"`)
       commonClConditions.push(`origin_contains: "${addressFilter}"`)
     }
 
@@ -169,7 +169,7 @@ export function useLiquidityTransactions({
           amount0
           amount1
           amountUSD
-          origin: sender
+          origin
           pool {
             isStable
             token0 {
@@ -196,7 +196,7 @@ export function useLiquidityTransactions({
           amount0
           amount1
           amountUSD
-          origin: sender
+          origin
           pool {
             isStable
             token0 {
@@ -327,9 +327,11 @@ export function useLiquidityTransactions({
 
   // 현재 페이지에 해당하는 데이터만 반환
   const transactions = useMemo(() => {
+    // 먼저 유효한 데이터만 필터링
+    const validTransactions = allTransactions.filter(tx => tx.origin)
     const startIndex = (currentPage - 1) * pageSize
     const endIndex = startIndex + pageSize
-    return allTransactions.slice(startIndex, endIndex).filter(tx => tx.origin)
+    return validTransactions.slice(startIndex, endIndex)
   }, [allTransactions, currentPage, pageSize])
 
   // 필터링된 데이터의 길이 계산
