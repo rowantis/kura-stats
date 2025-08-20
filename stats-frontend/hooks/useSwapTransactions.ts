@@ -49,8 +49,13 @@ export function useSwapTransactions({
 
   // 필터링된 쿼리 생성 함수
   const createFilteredQuery = () => {
-    let clConditions = []
-    let legacyConditions = []
+    // 08. 07. 15:07:58 KST
+    let clConditions = [
+      `timestamp_gte: "${1754460478 + 86400}"`
+    ]
+    let legacyConditions = [
+      `timestamp_gte: "${1754460478 + 86400}"`
+    ]
     if (addressFilter) {
       legacyConditions.push(`from_contains: "${addressFilter}"`)
       clConditions.push(`origin_contains: "${addressFilter}"`)

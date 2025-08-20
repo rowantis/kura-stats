@@ -41,10 +41,12 @@ export function useLiquidityPositions({
   const createFilteredQuery = () => {
     // 기본 조건을 먼저 추가
     let legacyConditions = [
+      `timestamp_gte: "${1754460478 + 86400}"`,
       'liquidityTokenBalance_gt: "0"',
       'stakedAmount_gt: "0"'
     ]
     let clConditions = [
+      `timestamp_gte: "${1754460478 + 86400}"`,
       'liquidity_gt: "0"'
     ]
 

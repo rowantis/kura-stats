@@ -37,7 +37,6 @@ export default function SwapTransactionSummary({ onTabChange }: SwapTransactionS
   })
 
 
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
