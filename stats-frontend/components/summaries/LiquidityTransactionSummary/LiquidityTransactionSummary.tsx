@@ -98,10 +98,6 @@ export default function LiquidityTransactionSummary({ onTabChange }: LiquidityTr
     return _downloadCSV
   }, [allTransactions])
 
-
-
-
-
   return (
     <BaseSummary
       currentPage={currentPage}

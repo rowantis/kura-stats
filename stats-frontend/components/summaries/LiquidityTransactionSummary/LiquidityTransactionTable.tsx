@@ -16,6 +16,7 @@ export default function LiquidityTransactionTable({
   currentPage,
   pageSize
 }: LiquidityTransactionTableProps) {
+  
   return (
     <BaseTable
       currentPage={currentPage}
@@ -35,7 +36,7 @@ export default function LiquidityTransactionTable({
         <TableHeaderCell>Token1 Amount</TableHeaderCell>
       </TableHeader>
       <TableBody>
-        {transactions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((tx) => (
+        {transactions.map((tx) => (
           <TableRow key={tx.id}>
             <TableCell>{formatDate(tx.timestamp)}</TableCell>
             <TableCell>
