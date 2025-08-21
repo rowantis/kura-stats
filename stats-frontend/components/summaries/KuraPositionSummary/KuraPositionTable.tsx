@@ -37,7 +37,7 @@ export default function KuraPositionTable({ positions, currentPage, pageSize, xR
         <TableHeaderCell>Vesting</TableHeaderCell>
       </TableHeader>
       <TableBody>
-        {positions.map((position, index) => (
+        {positions.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((position, index) => (
           <TableRow key={index}>
             <TableCell>
               <div className="flex items-center space-x-2">
