@@ -3,6 +3,9 @@ import CopyButton from '../../CopyButton'
 import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '../../BaseTable'
 import { useTokenPrices } from '@/hooks/useTokePrice'
 import { useMemo } from 'react'
+import { AccountTypeChip } from '../AllUsersSummary/AllUsersTable'
+import { isTeamAccount, isTeamFarmingAccount } from '@/lib/constants'
+import { formatAddress } from '@/lib/utils'
 
 interface KuraPositionTableProps {
   positions: KuraPosition[]
@@ -37,11 +40,15 @@ export default function KuraPositionTable({ positions, currentPage, pageSize, xR
         {positions.map((position, index) => (
           <TableRow key={index}>
             <TableCell>
-              <CopyButton
-                copyText={position.user}
-                showText={`${position.user.slice(0, 6)}...${position.user.slice(-4)}`}
-                label="유저"
-              />
+              <div className="flex items-center space-x-2">
+                <CopyButton
+                  copyText={position.user}
+                  showText={formatAddress(position.user)}
+                  label="유저"
+                />
+                {isTeamAccount(position.user) && <AccountTypeChip type="TEAM" />}
+                {isTeamFarmingAccount(position.user) && <AccountTypeChip type="FARM" />}
+              </div>
             </TableCell>
             <TableCell>${calcValue(position, xRatio, kuraPrice)}</TableCell>
             <TableCell>{position.kura}</TableCell>

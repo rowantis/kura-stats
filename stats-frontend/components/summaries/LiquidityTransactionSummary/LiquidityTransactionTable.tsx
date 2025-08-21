@@ -4,6 +4,8 @@ import CopyButton from '../../CopyButton'
 import TypeChip from '../../TypeChip'
 import PoolTypeChip from '../../PoolTypeChip'
 import BaseTable, { TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from '../../BaseTable'
+import { isTeamAccount, isTeamFarmingAccount } from '@/lib/constants'
+import { AccountTypeChip } from '../AllUsersSummary/AllUsersTable'
 
 interface LiquidityTransactionTableProps {
   transactions: LiquidityTransaction[]
@@ -16,7 +18,7 @@ export default function LiquidityTransactionTable({
   currentPage,
   pageSize
 }: LiquidityTransactionTableProps) {
-  
+
   return (
     <BaseTable
       currentPage={currentPage}
@@ -40,11 +42,15 @@ export default function LiquidityTransactionTable({
           <TableRow key={tx.id}>
             <TableCell>{formatDate(tx.timestamp)}</TableCell>
             <TableCell>
-              <CopyButton
-                copyText={tx.origin}
-                showText={formatAddress(tx.origin)}
-                label="유저"
-              />
+              <div className="flex items-center space-x-2">
+                <CopyButton
+                  copyText={tx.origin}
+                  showText={formatAddress(tx.origin)}
+                  label="유저"
+                />
+                {isTeamAccount(tx.origin) && <AccountTypeChip type="TEAM" />}
+                {isTeamFarmingAccount(tx.origin) && <AccountTypeChip type="FARM" />}
+              </div>
             </TableCell>
             <TableCell>
               <TypeChip type={tx.type} />
